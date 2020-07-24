@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Perceptron in C++ and Python – Andrew Wei – Brown '21 - Computer Science ScB</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="In this post, I’m going to cover the Perceptron Algorithm and compare its implementation in Python and C++.
+" />
+    <meta property="og:description" content="In this post, I’m going to cover the Perceptron Algorithm and compare its implementation in Python and C++.
+" />
+    
+    <meta name="author" content="Andrew Wei" />
+
+    
+    <meta property="og:title" content="Perceptron in C++ and Python" />
+    <meta property="twitter:title" content="Perceptron in C++ and Python" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Andrew Wei - Brown '21 - Computer Science ScB" href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://raw.githubusercontent.com/barryclark/jekyll-now/master/images/jekyll-logo.png" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Andrew Wei</a></h1>
+            <p class="site-description">Brown '21 - Computer Science ScB</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <article class="post">
+  <h1>Perceptron in C++ and Python</h1>
+
+  <div class="entry">
+    <p>In this post, I’m going to cover the Perceptron Algorithm and compare its implementation in Python and C++.</p>
+
+<h2 id="post-outline">Post Outline</h2>
+<ul>
+  <li><a href="#post-outline">Post Outline</a></li>
+  <li><a href="#perceptron-explanation">Perceptron Explanation</a></li>
+  <li><a href="#code">Code</a></li>
+  <li><a href="#benchmark-comparisons">Benchmark Comparisons</a></li>
+  <li><a href="#summary">Summary</a></li>
+  <li><a href="#resources">Resources</a></li>
+</ul>
+
+<h2 id="perceptron-explanation">Perceptron Explanation</h2>
+
+<p>The perceptron algorithm performs binary classifications by using a signed weighted sum of an input point to predict one of two output classes. The weights used are found by fitting a linear decision boundary to the training data. In order for the perceptron to achieve 100% accuracy, the data must be linearly separable.
+Formally, the perceptron prediction function f can be represented as:</p>
+
+<p><img src="/images/PerceptronBlog/p0.png" alt="_config.yml" /></p>
+
+<p>Predictions are made using the sign function as the activation function:</p>
+
+<p><img src="/images/PerceptronBlog/p1.png" alt="_config.yml" /></p>
+
+<p>Training the perceptron is an iterative process.
+At a high level, the algorithm:</p>
+<ul>
+  <li>Initialize weights to be zeroes</li>
+  <li>For a predefined # of epochs
+    <ul>
+      <li>makes a prediction for each misclassified point</li>
+      <li>updates the weight vector</li>
+    </ul>
+  </li>
+</ul>
+
+<p>The update rule for the weight matrix is given by the following:</p>
+
+<p><img src="/images/PerceptronBlog/p2.png" alt="_config.yml" /></p>
+
+<p>Error is calculated with the equation below where y is the label for each input x:</p>
+
+<p><img src="/images/PerceptronBlog/p3.png" alt="_config.yml" /></p>
+
+<p>The intuition behind the error calculation is that the change applied to the weight matrix W will only be non zero for an incorrect classification. We can see this to be true from the table below:</p>
+
+<p><img src="/images/PerceptronBlog/p4.png" alt="_config.yml" /></p>
+
+<h2 id="code">Code</h2>
+<p>The code I wrote can be found <a href="https://github.com/andrew128/perceptron-py-cpp">here</a>. Below is the code for a single iteration in the train method in both C++ and Python. From the code snippets, we can see see the similarities in the implementations and the differences in the syntax.</p>
+
+<h3 id="c">C++</h3>
+<p><img src="/images/PerceptronBlog/p5.png" alt="_config.yml" /></p>
+
+<h3 id="python">Python</h3>
+<p><img src="/images/PerceptronBlog/p6.png" alt="_config.yml" /></p>
+
+<p>I use numpy in Python and Eigen (used by Tensorflow) in C++ to perform matrix operations. The C++ code is bound to Python using pybind11 (used by PyTorch), making it callable from Python. To make the code easier to compare, I implemented a class based approach in both C++ and Python. Both classes have the same functions down to the function signature. When writing the makefile, I used the -O3 flag to reduce execution time.</p>
+
+<p>While the pseudocode included above has a learning rate variable, it is actually not necessary. In the perceptron algorithm, the learning rate only scales the weight matrix but does not actually change the sign of the prediction. Therefore, all the figures in the next section use a learning rate of 1. We can see this from the graph below, which shows there to be no correlation between accuracy and learning rate.</p>
+
+<p><img src="/images/PerceptronBlog/p17.png" alt="_config.yml" /></p>
+
+<p>I chose to use <a href="https://github.com/animesh-agarwal/Machine-Learning/blob/master/LogisticRegression/data/marks.txt">this</a> data source as it is 2d and can thus be visualized easily.</p>
+
+<h2 id="benchmark-comparisons">Benchmark Comparisons</h2>
+<h3 id="accuracy-vs-epoch">Accuracy vs Epoch</h3>
+<p><img src="/images/PerceptronBlog/p7.png" alt="_config.yml" /></p>
+
+<p>From the graph above, we can see that the C++ and Python accuracies vary equally as the number of epochs is increased (makes sense as they are the same algorithm so more of a sanity check).</p>
+
+<h3 id="time-vs-epoch">Time vs Epoch</h3>
+
+<p><img src="/images/PerceptronBlog/p8.png" alt="_config.yml" /></p>
+
+<p><img src="/images/PerceptronBlog/p9.png" alt="_config.yml" /></p>
+
+<p>We can see from the figure on the left that the Python implementation takes much more time than the C++ implementation. The figure on the right is included to show that the C++ implementation’s time does increase with the number of epochs, albeit at a slower rate than the Python implementation.</p>
+
+<h3 id="decision-boundaries">Decision Boundaries</h3>
+
+<p>The next 6 figures show both the C++ and the Python implementations’ decision boundaries at increasing epochs.</p>
+
+<h4 id="decision-boundary-at-1000-epochs">Decision Boundary at 1000 Epochs</h4>
+
+<p><img src="/images/PerceptronBlog/p10.png" alt="_config.yml" /></p>
+
+<p><img src="/images/PerceptronBlog/p11.png" alt="_config.yml" /></p>
+
+<h4 id="decision-boundary-at-25000-epochs">Decision Boundary at 25000 Epochs</h4>
+
+<p><img src="/images/PerceptronBlog/p12.png" alt="_config.yml" />
+<img src="/images/PerceptronBlog/p13.png" alt="_config.yml" /></p>
+
+<h4 id="decision-boundary-at-50000-epochs">Decision Boundary at 50000 Epochs</h4>
+
+<p><img src="/images/PerceptronBlog/p14.png" alt="_config.yml" /></p>
+
+<p><img src="/images/PerceptronBlog/p15.png" alt="_config.yml" /></p>
+
+<h2 id="summary">Summary</h2>
+
+<p>From the figures above, we see that the Perceptron algorithm implemented in C++ converges at a much faster rate than the same algorithm implemented in Python. A key reason is because Python loops are much slower than C++ loops. In addition, profiling the Python code reveals that numpy spends a significant amount of time on the insert function, which we use to add a bias to each input.</p>
+
+<p><img src="/images/PerceptronBlog/p16.png" alt="_config.yml" /></p>
+
+<h2 id="resources">Resources</h2>
+<ul>
+  <li><a href="https://pybind11.readthedocs.io/en/stable/index.html">Pybind11</a></li>
+  <li><a href="https://github.com/animesh-agarwal/Machine-Learning/blob/master/LogisticRegression/data/marks.txt">Data source</a></li>
+  <li><a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen</a></li>
+  <li><a href="https://docs.scipy.org/doc/numpy/index.html">Numpy</a></li>
+</ul>
+
+
+  </div>
+
+  <div class="date">
+    Written on December 31, 2019
+  </div>
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+
+
+
+<a href="https://github.com/andrew128"><i class="svg-icon github"></i></a>
+
+<a href="https://www.linkedin.com/in/andrew-wei-272027147/"><i class="svg-icon linkedin"></i></a>
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+
+  </body>
+</html>
