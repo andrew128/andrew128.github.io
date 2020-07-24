@@ -4,12 +4,9 @@ title: About
 permalink: /about/
 ---
 
-Some information about you!
-
-### More Information
-
-A place to include any other types of information that you'd like to include about yourself.
+Class of 2021 at Brown University concentrating in Computer Science ScB.
+In my free time I enjoy finding new music and playing squash.
 
 ### Contact me
 
-[email@domain.com](mailto:email@domain.com)
+[andrewwei98@gmail.com](mailto:andrewwei98@gmail.com)
