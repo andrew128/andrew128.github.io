@@ -7,6 +7,8 @@ permalink: /about/
 Class of 2021 at Brown University concentrating in Computer Science ScB.
 In my free time I enjoy finding new music and playing squash.
 
+[Here](sudocat.blogspot.com/) is the link to my old blog site.
+
 ### Contact me
 
 [andrewwei98@gmail.com](mailto:andrewwei98@gmail.com)
