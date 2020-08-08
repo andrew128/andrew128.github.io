@@ -21,6 +21,8 @@ The changes in population for each of the 3 groups can be modeled through differ
 The variables *I*, *S*, and *R* represent the population count of each group while N represents the total population count. The parameter *beta* controls how often a susceptible-infected contact results in a new infection. The parameter *gamma* represents the rate an infected recovers and moves into the resistant phase. At each time step *dt*, each population group is changed by an amount determined by each of those equations.
 
 ## Code
+The full script can be found in [this](https://github.com/andrew128/SIR-model-covid-19) repo.
+
 We predefine several variables:
 - init_infected: initial # of people infected
 - beta: The parameter controlling how often a susceptible-infected contact results in a new infection
