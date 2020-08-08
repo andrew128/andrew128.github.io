@@ -21,9 +21,13 @@ The changes in population for each of the 3 groups can be modeled through differ
 The variables *I*, *S*, and *R* represent the population count of each group while N represents the total population count. The parameter *beta* controls how often a susceptible-infected contact results in a new infection. The parameter *gamma* represents the rate an infected recovers and moves into the resistant phase. At each time step *dt*, each population group is changed by an amount determined by each of those equations.
 
 ## Code
-The full script can be found in [this](https://github.com/andrew128/SIR-model-covid-19) repo.
+The full script can be found in [this](https://github.com/andrew128/SIR-model-covid-19) repo. We make several assumptions in our implementation:
+- no new additions to susceptible group
+- population changes only as a result of the current disease
+- fixed # of people will recover any given day
+- once recovered, can't get reinfected
 
-We predefine several variables:
+We also predefine several variables:
 - init_infected: initial # of people infected
 - beta: The parameter controlling how often a susceptible-infected contact results in a new infection
 - gamma: The rate an infected recovers and moves into the resistant phase
@@ -47,12 +51,6 @@ for i in range(iterations):
 ```
 
 Note that each of the outputs of the differential equations calculated are multiplied by a variable *delta_time*. This variable represents the change in time at each time step *dt*. Looking at the differential equations described in the [Explanation](#explanation) section, we see that we can get *dS*, *dI*, and *dR* by multiplying both sides by *dt*. The smaller the value of *dt*, the greater the accuracy. In calculus, this is taking the derivative of a variable. We are approximating the derivative by calculating the change in *R* over a change in *t* (also known as the slope). 
-
-We also make several assumptions in our implementation:
-- no new additions to susceptible group
-- population changes only as a result of the current disease
-- fixed # of people will recover any given day
-- once recovered, can't get reinfected
 
 Running the following command will generate the graph.
 ```
