@@ -22,8 +22,8 @@ Here are a few useful commands that are worth highlighting:
 #### layout asm 
 This command divides the screen into two parts: the command console and a graphical view of the assembly code as you step through it. 
 Control-l can be used to refresh the UI whenever it inevitably becomes distorted.
-While layout asm is helpful, also helpful for full object dump objdump -d path/to/binary
-Can easily search through the entire assembly file!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+While layout asm is helpful, also helpful to view the complete disassembled binary.
+We can get the full assembly code using an object dump: `objdump -d path/to/binary > temp.txt`.
 
 #### i r
 This command lists out all the values that each of the registers hold. 
