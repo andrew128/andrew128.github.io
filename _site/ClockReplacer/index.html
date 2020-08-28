@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Clock Replacer Algorithm in C++ – Andrew Wei – Brown '21 - Computer Science ScB</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="This post introduces the Clock Replacer algorithm and an implementation in C++.
+" />
+    <meta property="og:description" content="This post introduces the Clock Replacer algorithm and an implementation in C++.
+" />
+    
+    <meta name="author" content="Andrew Wei" />
+
+    
+    <meta property="og:title" content="Clock Replacer Algorithm in C++" />
+    <meta property="twitter:title" content="Clock Replacer Algorithm in C++" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Andrew Wei - Brown '21 - Computer Science ScB" href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://avatars0.githubusercontent.com/u/8172167?s=400&u=27034bc93779390bfbaca21727973a54058fc093&v=4" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Andrew Wei</a></h1>
+            <p class="site-description">Brown '21 - Computer Science ScB</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <article class="post">
+  <h1>Clock Replacer Algorithm in C++</h1>
+
+  <div class="entry">
+    <p>This post introduces the Clock Replacer algorithm and an implementation in C++.</p>
+
+<h2 id="post-outline">Post Outline</h2>
+<ul>
+  <li><a href="#motivation">Motivation</a></li>
+  <li><a href="#conceptual-explanation">Explanation</a></li>
+  <li><a href="#code">Code</a></li>
+  <li><a href="#resources">Resources</a></li>
+</ul>
+
+<h2 id="motivation">Motivation</h2>
+<p>The Clock Replacer algorithm is a page replacement algorithm.
+Page replacement is the database problem of deciding what pages to hold in memory as opposed to on disk.</p>
+
+<p>The purpose of a clock replacer is to allow the client, restricted by storage size, to only store the most important items by removing pages that will not be needed in the near future.
+It accomplishes the same purpose as the more well-known LRU (least recently used) cache.</p>
+
+<h2 id="explanation">Explanation</h2>
+
+<p>The general idea of the algorithm is that a client can add a new page at any point in time. 
+If there is room in the clock replacer, it will simply be added.
+Otherwise the new item replaces the least used item.
+Least used is defined by the clock replacer algorithm.
+Besides adding and victimizing frames, we can also pin and unpin frames.
+Pinning a frame means that the page id in that frame will not be considered for eviction until it is unpinned.</p>
+
+<p>We will represent the replacer using 3 boolean vectors, <em>inClockReplacer</em>, <em>clockRefFlag</em>, and <em>pinned</em>.
+If <em>inClockReplacer</em> is true at a particular index, that means that index (aka frame id) is holding a page. The vector <em>clockRefFlag</em> holds the reference bit and <em>pinned</em> stores whether the frame is pinned or not.</p>
+
+<h3 id="accessing-a-frame">Accessing A Frame</h3>
+<p>Accessing a frame means either adding a new page to that frame or reading from an existing page at the frame.
+Either way, the code is the same.
+We mark the frame as storing a page and set its reference flag to 1.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bool ClockReplacer::AccessFrame(int frame_id) {
+  if (frame_id &lt; 0 || frame_id &gt;= numPages || pinned[frame_id]) return false;
+
+  inClockReplacer[frame_id] = true;
+  clockRefFlag[frame_id] = true;
+  numFramesInClockReplacer++;
+  return true;
+}
+</code></pre></div></div>
+
+<h3 id="victimizing-a-frame">Victimizing A Frame</h3>
+<p>Let’s picture the clock replacer as a circular buffer.
+Each slot in the circular buffer represents a frame, which can hold a single page at any point in time.
+Each slot also has a reference bit.
+When a page is first added or accessed afterwards, the reference bit is set to 1.
+A clock pointer (an integer) loops around the buffer and sets the reference bit to 0. 
+If the reference bit is already 0, then the item is chosen to be victimized.
+We use the input pointer <em>*frame_id</em> to hold the value of the frame id that was victimized.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bool ClockReplacer::VictimizeFrame(int *frame_id) {
+  // Loop while there are still frames to be victimized
+  while (numFramesInClockReplacer != 0) {
+    // Only consider victimizing frame if page is stored there and 
+    // frame is not pinned
+    if (inClockReplacer[clockPointer] &amp;&amp; !pinned[clockPointer]) {
+      if (clockRefFlag[clockPointer]) {
+        // Set reference bit to 0
+        clockRefFlag[clockPointer] = false;
+      } else {
+        // Identified frame to be victimized
+        *frame_id = clockPointer;
+        inClockReplacer[clockPointer] = false;
+        numFramesInClockReplacer--;
+        return true;
+      }
+    }
+    clockPointer = (clockPointer + 1) % numPages;
+  }
+
+  return false;
+}
+</code></pre></div></div>
+
+<h3 id="pinning-and-unpinning">Pinning and Unpinning</h3>
+<p>We will use a boolean vector to keep track of which pages are pinned.
+Pinning and unpinning are defined by the <em>Pin()</em> and <em>Unpin()</em> methods, which update the boolean vector <em>pinned</em>.</p>
+
+<h2 id="code">Code</h2>
+
+<p>The full code is in <a href="https://github.com/andrew128/ClockReplacer">this repo</a>.
+To run the tests, use the following command:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>g++ -std=c++17 -g -Wall -W -o a.out clock_replacer_test.cpp clock_replacer.cpp &amp;&amp; ./a.out
+</code></pre></div></div>
+
+<h2 id="resources">Resources</h2>
+<ul>
+  <li><a href="https://15445.courses.cs.cmu.edu/fall2019/project1/">CMU Databases 2019</a></li>
+</ul>
+
+
+  </div>
+
+  <div class="date">
+    Written on August  2, 2020
+  </div>
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:andrewwei98@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="https://github.com/andrew128"><i class="svg-icon github"></i></a>
+
+<a href="https://www.linkedin.com/in/andrew-wei-272027147/"><i class="svg-icon linkedin"></i></a>
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+
+  </body>
+</html>

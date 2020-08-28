@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Defusing CMU's Bomb Lab using GDB (8/28/20) – Andrew Wei – Brown '21 - Computer Science ScB</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="This post walks through CMU’s ‘bomb’ lab, which involves defusing a ‘bomb’ by finding the correct inputs to successive phases in a binary executable using GDB.
+" />
+    <meta property="og:description" content="This post walks through CMU’s ‘bomb’ lab, which involves defusing a ‘bomb’ by finding the correct inputs to successive phases in a binary executable using GDB.
+" />
+    
+    <meta name="author" content="Andrew Wei" />
+
+    
+    <meta property="og:title" content="Defusing CMU's Bomb Lab using GDB (8/28/20)" />
+    <meta property="twitter:title" content="Defusing CMU's Bomb Lab using GDB (8/28/20)" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Andrew Wei - Brown '21 - Computer Science ScB" href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://avatars0.githubusercontent.com/u/8172167?s=400&u=27034bc93779390bfbaca21727973a54058fc093&v=4" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Andrew Wei</a></h1>
+            <p class="site-description">Brown '21 - Computer Science ScB</p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <article class="post">
+  <h1>Defusing CMU's Bomb Lab using GDB (8/28/20)</h1>
+
+  <div class="entry">
+    <p>This post walks through CMU’s ‘bomb’ lab, which involves defusing a ‘bomb’ by finding the correct inputs to successive phases in a binary executable using GDB.</p>
+
+<h2 id="post-outline">Post Outline</h2>
+<ul>
+  <li><a href="#intro">Intro</a></li>
+  <li><a href="#gdb">GDB</a></li>
+  <li><a href="#phase-1">Phase 1</a></li>
+  <li><a href="#phase-2">Phase 2</a></li>
+  <li><a href="#phase-3">Phase 3</a></li>
+  <li><a href="#resources">Resources</a></li>
+</ul>
+
+<h2 id="intro">Intro</h2>
+<p>This post walks through the first 3 phases of the lab.
+I used a linux machine running x86_64.
+Also note that the binary follow the AT&amp;T standard so instruction operations are reversed (e.g. mov a b moves data from a to b as opposed to b to a).</p>
+
+<h2 id="gdb">GDB</h2>
+<p>Here are a few useful commands that are worth highlighting:</p>
+<h4 id="layout-asm">layout asm</h4>
+<p>This command divides the screen into two parts: the command console and a graphical view of the assembly code as you step through it. 
+Control-l can be used to refresh the UI whenever it inevitably becomes distorted.
+While layout asm is helpful, also helpful for full object dump objdump -d path/to/binary
+Can easily search through the entire assembly file!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</p>
+
+<h4 id="i-r">i r</h4>
+<p>This command lists out all the values that each of the registers hold.</p>
+
+<h4 id="i-b">i b</h4>
+<p>This command lists all the current breakpoints as well as how many times each breakpoint has been hit on the current run.</p>
+
+<h4 id="b-memory-address-function-name">b *memory address, function name</h4>
+<p>This command sets breakpoints throughout the code.
+Breakpoints can be set at specific memory addresses, the start of functions, and line numbers.</p>
+
+<h4 id="x-memory-address-register">x memory address, register</h4>
+<p>This command prints data stored at a register or memory address.
+It is useful to check the values of these registers before/after entering a function.
+For example, after a function has finished executing, this command can be used to check the value of $rax to see the function output.</p>
+
+<h2 id="phase-1">Phase 1</h2>
+
+<p>We can then set up a breakpoint upon entering <code class="language-plaintext highlighter-rouge">phase_1</code> using <code class="language-plaintext highlighter-rouge">b phase_1</code> and for the function <code class="language-plaintext highlighter-rouge">explode_bomb</code> to avoid losing points.
+Using <code class="language-plaintext highlighter-rouge">layout asm</code>, we can see the assembly code as we step through the program.
+Let’s enter the string <code class="language-plaintext highlighter-rouge">blah</code> as our input to <code class="language-plaintext highlighter-rouge">phase_1</code>.
+When we hit <code class="language-plaintext highlighter-rouge">phase_1</code>, we can see the following code:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0000000000400ee0 &lt;phase_1&gt;:
+  400ee0:	48 83 ec 08          	sub    $0x8,%rsp // allocate space on the stack
+  400ee4:	be 00 24 40 00       	mov    $0x402400,%esi // move data from some memory to esi register
+  400ee9:	e8 4a 04 00 00       	callq  401338 &lt;strings_not_equal&gt; // call a function
+  400eee:	85 c0                	test   %eax,%eax 
+  400ef0:	74 05                	je     400ef7 &lt;phase_1+0x17&gt; // if eax is equal, avoided the bomb
+  400ef2:	e8 43 05 00 00       	callq  40143a &lt;explode_bomb&gt;
+  400ef7:	48 83 c4 08          	add    $0x8,%rsp
+  400efb:	c3                   	retq   
+</code></pre></div></div>
+
+<p>The code is annotated with comments describing each line.
+We see that a <code class="language-plaintext highlighter-rouge">strings_not_equal</code> function is being called.
+From this, we can guess that to pass <code class="language-plaintext highlighter-rouge">phase_1</code>, we need to enter the correct string.</p>
+
+<p>Let’s set a breakpoint at <code class="language-plaintext highlighter-rouge">strings_not_equal</code>.
+Once we enter the function, we can check the registers that store the first two inputs: $rdi and $rsi.</p>
+
+<p><img src="/images/CMUBombLab/p1.png" alt="_config.yml" /></p>
+
+<p>We can see that our string input <code class="language-plaintext highlighter-rouge">blah</code> is being compared with the string <code class="language-plaintext highlighter-rouge">Border relations with Canada have never been better.</code>.
+Entering this string defuses phase_1.</p>
+
+<h2 id="phase-2">Phase 2</h2>
+<p>Let’s clear all our previous breakpoints and set a new one at <code class="language-plaintext highlighter-rouge">phase_2</code>.
+Let’s use <code class="language-plaintext highlighter-rouge">blah</code> again as out input for <code class="language-plaintext highlighter-rouge">phase_2</code>.</p>
+
+<p>We can now see the assembly code.
+Each line is annotated.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0000000000400efc &lt;phase_2&gt;:
+  400efc:	55                   	push   %rbp
+  400efd:	53                   	push   %rbx
+  400efe:	48 83 ec 28          	sub    $0x28,%rsp
+  400f02:	48 89 e6             	mov    %rsp,%rsi
+  400f05:	e8 52 05 00 00       	callq  40145c &lt;read_six_numbers&gt; // read 6 numbers
+  400f0a:	83 3c 24 01          	cmpl   $0x1,(%rsp) // check to see that first # is 1
+  400f0e:	74 20                	je     400f30 &lt;phase_2+0x34&gt;
+  400f10:	e8 25 05 00 00       	callq  40143a &lt;explode_bomb&gt;
+  400f15:	eb 19                	jmp    400f30 &lt;phase_2+0x34&gt;
+  400f17:	8b 43 fc             	mov    -0x4(%rbx),%eax // move the previous number into %eax
+  400f1a:	01 c0                	add    %eax,%eax // double %eax
+  400f1c:	39 03                	cmp    %eax,(%rbx) // compare %eax and the current number
+  400f1e:	74 05                	je     400f25 &lt;phase_2+0x29&gt; // if equal, avoid bomb
+  400f20:	e8 15 05 00 00       	callq  40143a &lt;explode_bomb&gt;
+  400f25:	48 83 c3 04          	add    $0x4,%rbx
+  400f29:	48 39 eb             	cmp    %rbp,%rbx
+  400f2c:	75 e9                	jne    400f17 &lt;phase_2+0x1b&gt; // jump back to 400f17
+  400f2e:	eb 0c                	jmp    400f3c &lt;phase_2+0x40&gt; // otherwise end of loop, exit
+  400f30:	48 8d 5c 24 04       	lea    0x4(%rsp),%rbx
+  400f35:	48 8d 6c 24 18       	lea    0x18(%rsp),%rbp
+  400f3a:	eb db                	jmp    400f17 &lt;phase_2+0x1b&gt;
+  400f3c:	48 83 c4 28          	add    $0x28,%rsp
+  400f40:	5b                   	pop    %rbx
+  400f41:	5d                   	pop    %rbp
+  400f42:	c3                   	retq 
+</code></pre></div></div>
+
+<p>From the code, we can see that we first read in 6 numbers.
+To see the format of how we enter the six numbers, let’s set a breakpoint at <code class="language-plaintext highlighter-rouge">read_six_numbers</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>000000000040145c &lt;read_six_numbers&gt;:
+  40145c:	48 83 ec 18          	sub    $0x18,%rsp
+  401460:	48 89 f2             	mov    %rsi,%rdx
+  401463:	48 8d 4e 04          	lea    0x4(%rsi),%rcx
+  401467:	48 8d 46 14          	lea    0x14(%rsi),%rax
+  40146b:	48 89 44 24 08       	mov    %rax,0x8(%rsp)
+  401470:	48 8d 46 10          	lea    0x10(%rsi),%rax
+  401474:	48 89 04 24          	mov    %rax,(%rsp)
+  401478:	4c 8d 4e 0c          	lea    0xc(%rsi),%r9
+  40147c:	4c 8d 46 08          	lea    0x8(%rsi),%r8
+  401480:	be c3 25 40 00       	mov    $0x4025c3,%esi // Move some value into a register
+  401485:	b8 00 00 00 00       	mov    $0x0,%eax
+  40148a:	e8 61 f7 ff ff       	callq  400bf0 &lt;__isoc99_sscanf@plt&gt; // scanf() is called
+  40148f:	83 f8 05             	cmp    $0x5,%eax
+  401492:	7f 05                	jg     401499 &lt;read_six_numbers+0x3d&gt;
+  401494:	e8 a1 ff ff ff       	callq  40143a &lt;explode_bomb&gt;
+  401499:	48 83 c4 18          	add    $0x18,%rsp
+  40149d:	c3                   	retq   
+</code></pre></div></div>
+
+<p>From the above, we see that we are passing some value into a register before calling <code class="language-plaintext highlighter-rouge">scanf()</code>. 
+Knowing that <code class="language-plaintext highlighter-rouge">scanf()</code> takes in a string format as its input, let’s break right before <code class="language-plaintext highlighter-rouge">scanf()</code> is called and check the value of $esi.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(gdb) x /s $esi
+0x4025c3:       "%d %d %d %d %d %d"
+</code></pre></div></div>
+<p>From this, we can see that the input format of <code class="language-plaintext highlighter-rouge">read_six_numbers</code> should be 6 space-separated integers.</p>
+
+<p>Going back to the code for <code class="language-plaintext highlighter-rouge">phase_2</code>, we see that the first number has to be <code class="language-plaintext highlighter-rouge">1</code>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  400f0a:	83 3c 24 01          	cmpl   $0x1,(%rsp) // check to see that first # is 1
+  400f0e:	74 20                	je     400f30 &lt;phase_2+0x34&gt;
+  400f10:	e8 25 05 00 00       	callq  40143a &lt;explode_bomb&gt;
+  400f15:	eb 19                	jmp    400f30 &lt;phase_2+0x34&gt;
+</code></pre></div></div>
+
+<p>We then move onto the next few lines.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  400f17:	8b 43 fc             	mov    -0x4(%rbx),%eax // move the previous number into %eax
+  400f1a:	01 c0                	add    %eax,%eax // double %eax
+  400f1c:	39 03                	cmp    %eax,(%rbx) // compare %eax and the current number
+  400f1e:	74 05                	je     400f25 &lt;phase_2+0x29&gt; // if equal, avoid bomb
+  400f20:	e8 15 05 00 00       	callq  40143a &lt;explode_bomb&gt;
+  400f25:	48 83 c3 04          	add    $0x4,%rbx
+  400f29:	48 39 eb             	cmp    %rbp,%rbx
+  400f2c:	75 e9                	jne    400f17 &lt;phase_2+0x1b&gt; // jump back to 400f17
+  400f2e:	eb 0c                	jmp    400f3c &lt;phase_2+0x40&gt; // otherwise end of loop, exit
+</code></pre></div></div>
+
+<p>From the above annotations, we can see that there is a loop.
+At each iteration, we check to see that the current value is double the previous value.
+From this, we can deduce that the input for <code class="language-plaintext highlighter-rouge">phase_2</code> should be <code class="language-plaintext highlighter-rouge">1 2 4 8 16 32</code>.</p>
+
+<h2 id="phase-3">Phase 3</h2>
+<p>Let’s now set a breakpoint at <code class="language-plaintext highlighter-rouge">phase_3</code>.
+The following lines are annotated.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0000000000400f43 &lt;phase_3&gt;:
+  400f43:	48 83 ec 18          	sub    $0x18,%rsp
+  400f47:	48 8d 4c 24 0c       	lea    0xc(%rsp),%rcx
+  400f4c:	48 8d 54 24 08       	lea    0x8(%rsp),%rdx
+  400f51:	be cf 25 40 00       	mov    $0x4025cf,%esi // reading $0x4025cf results in "%d %d"
+  400f56:	b8 00 00 00 00       	mov    $0x0,%eax
+  400f5b:	e8 90 fc ff ff       	callq  400bf0 &lt;__isoc99_sscanf@plt&gt; // call scanf()
+  400f60:	83 f8 01             	cmp    $0x1,%eax
+  400f63:	7f 05                	jg     400f6a &lt;phase_3+0x27&gt; // if output greater than 1 (read more than 1 number), avoid bomb
+  400f65:	e8 d0 04 00 00       	callq  40143a &lt;explode_bomb&gt;
+  400f6a:	83 7c 24 08 07       	cmpl   $0x7,0x8(%rsp) // Compare out first number 0x8(%rsp) with 0x7
+  400f6f:	77 3c                	ja     400fad &lt;phase_3+0x6a&gt;
+  400f71:	8b 44 24 08          	mov    0x8(%rsp),%eax
+  400f75:	ff 24 c5 70 24 40 00 	jmpq   *0x402470(,%rax,8)
+  400f7c:	b8 cf 00 00 00       	mov    $0xcf,%eax
+  400f81:	eb 3b                	jmp    400fbe &lt;phase_3+0x7b&gt;
+  400f83:	b8 c3 02 00 00       	mov    $0x2c3,%eax
+  400f88:	eb 34                	jmp    400fbe &lt;phase_3+0x7b&gt;
+  400f8a:	b8 00 01 00 00       	mov    $0x100,%eax
+  400f8f:	eb 2d                	jmp    400fbe &lt;phase_3+0x7b&gt;
+  400f91:	b8 85 01 00 00       	mov    $0x185,%eax
+  400f96:	eb 26                	jmp    400fbe &lt;phase_3+0x7b&gt;
+  400f98:	b8 ce 00 00 00       	mov    $0xce,%eax
+  400f9d:	eb 1f                	jmp    400fbe &lt;phase_3+0x7b&gt;
+  400f9f:	b8 aa 02 00 00       	mov    $0x2aa,%eax
+  400fa4:	eb 18                	jmp    400fbe &lt;phase_3+0x7b&gt;
+  400fa6:	b8 47 01 00 00       	mov    $0x147,%eax
+  400fab:	eb 11                	jmp    400fbe &lt;phase_3+0x7b&gt;
+  400fad:	e8 88 04 00 00       	callq  40143a &lt;explode_bomb&gt;
+  400fb2:	b8 00 00 00 00       	mov    $0x0,%eax
+  400fb7:	eb 05                	jmp    400fbe &lt;phase_3+0x7b&gt;
+  400fb9:	b8 37 01 00 00       	mov    $0x137,%eax
+  400fbe:	3b 44 24 0c          	cmp    0xc(%rsp),%eax // compare our second input 0xc(%rsp) with value in %eax (682)
+  400fc2:	74 05                	je     400fc9 &lt;phase_3+0x86&gt;
+  400fc4:	e8 71 04 00 00       	callq  40143a &lt;explode_bomb&gt;
+  400fc9:	48 83 c4 18          	add    $0x18,%rsp
+  400fcd:	c3                   	retq  
+</code></pre></div></div>
+
+<p>From the above comments, we deduce that we want to input two space-separated integers.
+The first number we can try to be 6 and the second must be 682.
+Entering these numbers allows us to pass <code class="language-plaintext highlighter-rouge">phase_3</code>.</p>
+
+<h2 id="resources">Resources</h2>
+<ul>
+  <li><a href="http://csapp.cs.cmu.edu/3e/labs.html">CMU Lab Website</a></li>
+</ul>
+
+  </div>
+
+  <div class="date">
+    Written on August 28, 2020
+  </div>
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+<a href="mailto:andrewwei98@gmail.com"><i class="svg-icon email"></i></a>
+
+
+<a href="https://github.com/andrew128"><i class="svg-icon github"></i></a>
+
+<a href="https://www.linkedin.com/in/andrew-wei-272027147/"><i class="svg-icon linkedin"></i></a>
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+
+  </body>
+</html>
