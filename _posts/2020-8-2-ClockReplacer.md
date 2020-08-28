@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Clock Replacer Algorithm in C++
+title: Clock Replacer Algorithm in C++ (8/2/20)
 ---
 This post introduces the Clock Replacer algorithm and an implementation in C++.
 

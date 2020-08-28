@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Perceptron in C++ and Python
+title: Perceptron in C++ and Python (12/31/2019)
 ---
 In this post, I’m going to cover the Perceptron Algorithm and compare its implementation in Python and C++.
 
