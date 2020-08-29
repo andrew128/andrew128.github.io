@@ -11,4 +11,4 @@ In my free time I enjoy finding new music and playing squash.
 
 ### Contact me
 
-[andrewwei98@gmail.com](mailto:andrewwei98@gmail.com)
+- andrewwei98 [at] gmail [dot] com
