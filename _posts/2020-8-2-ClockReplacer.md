@@ -6,7 +6,7 @@ This post introduces the Clock Replacer algorithm and an implementation in C++.
 
 ## Post Outline
 - [Motivation](#motivation)
-- [Explanation](#conceptual-explanation)
+- [Explanation](#explanation)
 - [Code](#code)
 - [Resources](#resources)
 
