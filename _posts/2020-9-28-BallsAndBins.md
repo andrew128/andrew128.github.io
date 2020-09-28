@@ -117,3 +117,4 @@ In other words, we will have at most $\frac{\ln(n)}{\ln \ln n}$ balls max in any
 ## Resources
 - [Toronto](http://www.cs.toronto.edu/~toni/Courses/263-2013/handouts/hashing-uiuc.pdf)
 - [Purdue](https://www.cs.purdue.edu/homes/hmaji/teaching/Spring%202017/lectures/03.pdf)
+- [Princeton](https://www.cs.princeton.edu/courses/archive/fall16/cos521/Lectures/lec1.pdf)
