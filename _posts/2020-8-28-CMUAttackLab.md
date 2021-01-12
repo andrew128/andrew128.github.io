@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Walkthrough of CMU's Attack Lab (8/28/20)
+title: Walkthrough of CMU's Attack Lab
 ---
 This post walks through CMU's 'Attack' lab, which involves exploiting the stack space of vulnerable binaries.
 

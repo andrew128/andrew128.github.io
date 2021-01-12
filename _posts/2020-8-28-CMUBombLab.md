@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Defusing CMU's Bomb Lab using GDB (8/28/20)
+title: Defusing CMU's Bomb Lab using GDB
 ---
 This post walks through CMU's 'bomb' lab, which involves defusing a 'bomb' by finding the correct inputs to successive phases in a binary executable using GDB.
 

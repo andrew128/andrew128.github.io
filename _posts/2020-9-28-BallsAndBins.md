@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Balls and Bins Proof (9/28/20)
+title: Balls and Bins Proof
 ---
 A full walk through of the balls and bins proof, split up into 4 parts.
 

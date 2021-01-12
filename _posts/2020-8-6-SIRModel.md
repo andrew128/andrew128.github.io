@@ -1,6 +1,6 @@
 ---
 layout: post
-title: SIR Model From Scratch in Python (8/6/20)
+title: SIR Model From Scratch in Python
 ---
 
 This post explains the SIR model and includes a Python implementation that generates a graphic describing a population’s infectious status over time.

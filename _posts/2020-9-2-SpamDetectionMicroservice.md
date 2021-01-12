@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Spam Detection Microservice Using Snorkel (9/2/20)
+title: Spam Detection Microservice Using Snorkel
 ---
 This post walks through the process of putting a spam detection model using [Snorkel](https://github.com/snorkel-team/snorkel) into a microservice using Flask, Docker, and AWS.
 
