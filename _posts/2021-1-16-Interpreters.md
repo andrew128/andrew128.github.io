@@ -486,7 +486,7 @@ func Start(in io.Reader, out io.Writer) {
 ```
 
 ## Running the code
-The code from [Writing An Interpreter In Go by Thorsten Ball](https://interpreterbook.com/) can be found in [this repo]().
+The code from [Writing An Interpreter In Go by Thorsten Ball](https://interpreterbook.com/) can be found in [this repo](https://github.com/andrew128/waiig_code).
 To run a test, navigate to the `src/monkey` directory and run `go test ./<test name>`.
 For example, running the test for `ast` would be `go test ./ast`.
 To run the actual `Monkey` interpreter, navigate to the `src/monkey` directory and run `go run main.go`. 
