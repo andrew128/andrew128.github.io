@@ -21,7 +21,7 @@ This blog post aims to go into more detail.
 
 At a high level, what does an OS need?
 
-## Process and Threads
+## Processes and Threads
 One obvious answer are processes and threads. 
 Processes represent programs that are being executed. 
 A process can have multiple threads of execution. 
@@ -35,6 +35,9 @@ User threads are mapped to kernel threads in a way that depends on the OS’s im
 For example, we could have a many to one model in which many user level threads are mapped to a single kernel thread. 
 We could have a one to one model in which each user thread is mapped to its own kernel thread. 
 We could also have a many to many model in which many user threads are multiplexed on many kernel threads.
+
+![_config.yml]({{ site.baseurl }}/images/OS/threads.png)
+[Source](https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/4_Threads.html#:~:text=The%20many%2Dto%2Dmany%20model,not%20block%20the%20entire%20process.)
 
 Note that true parallelism can only truly be achieved if the chip of the computer has multiple cores (i.e. multiple CPUs on a single chip). 
 Also note that the POSIX standard defines the specification for pthreads, not the implementation. 
@@ -63,6 +66,9 @@ In S5FS, a very early Unix file system, there are four key components:
 - the inode list
 - the data region
 
+![_config.yml]({{ site.baseurl }}/images/OS/disk.png)
+[Source](#https://www.amazon.com/Operating-Systems-Depth-Design-Programming/dp/0471687235)
+
 Together, these components form the file format on disk of the file system. 
 The boot block connects the operating system and the file system; it contains the initial program stored on the disk that begins the loading of the operating system. 
 The super block describes the layout of the rest of the disk. 
@@ -79,6 +85,9 @@ In addition, representing sparse files where huge chunks of the file are empty i
 This is because we can have indirect blocks point to nothing, indicating no data is stored there. 
 A downside is that accessing actual data in the indirect blocks is slower as multiple layers of indirect blocks have to be traversed.
 
+![_config.yml]({{ site.baseurl }}/images/OS/indirectblocks.png)
+[Source](#https://www.amazon.com/Operating-Systems-Depth-Design-Programming/dp/0471687235)
+
 ## Virtual Memory
 
 One of the key components of an operating system is virtual memory. 
@@ -87,6 +96,9 @@ In the idealized perspective, each process has its own virtual view of memory th
 
 Because the memory is virtual, the memory of all the processes don’t have to actually be in main memory all the time. 
 They can be mapped in from disk as needed, which is significantly cheaper. 
+
+![_config.yml]({{ site.baseurl }}/images/OS/pagetable.png)
+[Source](https://en.wikipedia.org/wiki/Page_table)
 
 The pages that are being mapped to and from disk and memory correspond to the different parts of a process’s virtual address space such as the text (containing the source code), the data, the stack (stores local variables/function calls), the heap (dynamic memory allocation), and more.
 
