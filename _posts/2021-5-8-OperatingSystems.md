@@ -6,22 +6,22 @@ title: Operating Systems in a Nutshell
 This blog post introduces Operating Systems and the pieces involved, specifically: processes and threads, drivers, file systems, and virtual memory. 
 
 ## Post Outline
-- Intro
-- Processes and threads
-- Drivers
-- Virtual file system/file systems
-- Virtual memory
-- Conclusion
-- Sources
+- [Intro](#intro)
+- [Processes and Threads](#processes-and-threads)
+- [Drivers](#drivers)
+- [File System](#file-system)
+- [Virtual memory](#virtual-memory)
+- [Conclusion](#conclusion)
+- [Sources](#sources)
 
 ## Intro
-In a previous blog post (C Source Code to x86 Binary), we detailed how C source code is compiled into x86 binary. 
+In a previous blog post [C Source Code to x86 Binary](https://andrew128.github.io/x86-binary/), we detailed how C source code is compiled into x86 binary. 
 We ended with a brief section that described at a high level how an OS runs the compiled user binary. 
 This blog post aims to go into more detail.
 
 At a high level, what does an OS need?
 
-## Process and threads
+## Process and Threads
 One obvious answer are processes and threads. 
 Processes represent programs that are being executed. 
 A process can have multiple threads of execution. 
@@ -45,7 +45,7 @@ The software that handles these interactions are called drivers.
 For example, in order for a user to interact with a terminal via a keyboard, an OS might have a buffer that reads in what users type.
 When an enter (i.e. new line character is pressed), the OS would read in what is in the buffer up until the new line and attempt to interpret it as a command. 
 
-## Virtual file system/on disk file system
+## File System
 An operating system will also typically have a file system. 
 A file system’s purpose is to provide permanent storage to the OS. 
 An OS’s file system differs from database systems in that data systems are built to handle large amounts of data. 
@@ -79,7 +79,7 @@ In addition, representing sparse files where huge chunks of the file are empty i
 This is because we can have indirect blocks point to nothing, indicating no data is stored there. 
 A downside is that accessing actual data in the indirect blocks is slower as multiple layers of indirect blocks have to be traversed.
 
-## Virtual memory
+## Virtual Memory
 
 One of the key components of an operating system is virtual memory. 
 Virtual memory is a technique in representing memory in an idealized perspective separate from what actual physical memory may be structured. 
@@ -90,7 +90,7 @@ They can be mapped in from disk as needed, which is significantly cheaper.
 
 The pages that are being mapped to and from disk and memory correspond to the different parts of a process’s virtual address space such as the text (containing the source code), the data, the stack (stores local variables/function calls), the heap (dynamic memory allocation), and more.
 
-The sections are also covered in this blog post: https://andrew128.github.io/x86-binary/#executable-format.
+The sections are also covered in [this blog post](https://andrew128.github.io/x86-binary/#executable-format).
 
 These different areas can be stored as a linked list where each allocated piece of memory represents a part of the process’s virtual address space. 
 This is typically called a virtual memory map.
@@ -115,8 +115,7 @@ If the corresponding physical address is not found, then we have to go back to d
 In this blog post, we covered the core parts that make up an OS, from the processes and threads that run programs to the drivers that allow users to interact with the computer physically to disks that allow data to be stored, to virtual memory which allows for an efficient and effective method of mapping between data on disk and memory processes.
 
 ## Sources
-- Weenix website
-- https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/4_Threads.html#:~:text=The%20many%2Dto%2Dmany%20model,not%20block%20the%20entire%20process.
-- https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/what-is-a-driver-
-- https://en.wikipedia.org/wiki/File_system
-- Weenix textbook
+- [Weenix website](https://github.com/brown-cs1690/handout/wiki/Virtual-Memory)
+- [UIC OS Notes](https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/4_Threads.html#:~:text=The%20many%2Dto%2Dmany%20model,not%20block%20the%20entire%20process.)
+- [Microsoft Drivers Docs](https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/what-is-a-driver-)
+- [File System](https://en.wikipedia.org/wiki/File_system)
