@@ -8,7 +8,10 @@ The solution is written in C++ and uses mutexes and condition variables.
 This post is based off of the blog post [here](https://baptiste-wicht.com/posts/2012/04/c11-concurrency-tutorial-advanced-locking-and-condition-variables.html) by Baptiste Wicht.
 
 ## Post Outline
-- [Intro](#intro)
+- [Background](#background)
+- [Bounded Buffer](#bounded-buffer)
+- [Producer Consumer Code](#producer-consumer-code)
+- [Resources](#resources)
 
 ## Background
 
