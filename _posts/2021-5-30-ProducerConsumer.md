@@ -24,7 +24,7 @@ However, this solution will result in data races.
 Data races easily occur if no synchronization techniques are used because the size of the buffer needs to be updated atomically with the production and consumption of data in the buffer.
 If the buffer size update is not thread safe, producers may try to add data to the buffer when it is already full and consumers may try to remove data from the buffer when the buffer is empty.
 
-We will go over two synchronization primitives, mutexes and condition variables, that can be used in one possible solution to this problem.
+We will go over two synchronization primitives, **mutexes** and **condition variables**, that can be used in one possible solution to this problem.
 
 ### Mutexes
 Mutexes are a synchronization primitive that prevent data races when multiple threads access the same data structure.
@@ -37,21 +37,65 @@ Mutexes alone are enough to solve the data race problem discussed previously if 
 However, the solution is inefficient because of the while loop, which keeps the CPU busy unnecessarily while it loops.
 We can call a sleep function in intervals but ultimately this solution is still inefficient because the threads can't talk to each other.
 
-### Condition Variables
-As a solution to the previous 
+Note that with mutexes, **all** accesses to a shared data structure between threads must be synchronized with mutexes.
+Otherwise, data races will occur.
 
-Note that although the way condition variables are implemented means that there is a while loop similar to the way mutexes are implemented, the difference is that condition variables allow different threads to notify one another through the `notify*()` function calls.
+### Condition Variables
+As a solution to the previous problem, we will introduce condition variables, which allow inter thread communication.
+
+Condition variables work by making a thread wait (i.e. blocked) until it is notified to resume by another thread.
+A unique lock is used to lock the calling thread that calls `wait()`.
+The calling thread remains blocked until another thread calls `notify()` on the same condition variable.
+
+When a calling thread calls `wait()` it must first acquire the mutex as input to `wait()`.
+During `wait()`, the thread is placed on the condition variable's queue of threads and the mutex is released.
+Once the thread that is waiting is notified by another thread, it reacquires the mutex.
 
 ## Bounded Buffer
+
+Let's go over the header file for the `Buffer` class.
 The main part of the problem is the `Buffer` data structure, which has two functions for "producing" (i.e. placing integers in the buffer) and "consuming" (i.e. removing integers from the buffer).
 
-it's a circular buffer
+The buffer is a circular bounded buffer, meaning that it has a fixed size as defined by the macro `BUFFER_CAPACITY`.
+The buffer also rotates in a circular fashion as kept track of by the left and right integer index fields of the `Buffer` class.
+
+We also have a mutex for the condition variables `not_empty` and `not_full`.
+Note that we have a single mutex (instead of one for each condition variable) because we want to synchronize the `produce()` and `consume()` functions.
+We will go into more detail about the usage of the condition variables in the following sections.
+
+```
+#define BUFFER_CAPACITY 10
+
+class Buffer {
+    // Buffer fields
+    int buffer [BUFFER_CAPACITY];
+    int buffer_size;
+    int left; // index where variables are put inside of buffer (produced)
+    int right; // index where variables are removed from buffer (consumed)
+    
+    // Fields for concurrency
+    std::mutex mtx;
+    std::condition_variable not_empty;
+    std::condition_variable not_full;
+    
+public:
+    // Place integer inside of buffer
+    void produce(int thread_id, int num);
+    
+    // Remove integer from buffer
+    int consume(int thread_id);
+    
+    Buffer();
+};
+```
 
 ### Buffer::produce()
 
 ### Buffer::consume()
 
 ## Producer Consumer Code
+
+// go over main() code
 
 ## Resources
 - [Baptiste Wicht's Blog post](https://baptiste-wicht.com/posts/2012/04/c11-concurrency-tutorial-advanced-locking-and-condition-variables.html)
