@@ -54,6 +54,8 @@ When a calling thread calls `wait()` it must first acquire the mutex as input to
 During `wait()`, the thread is placed on the condition variable's queue of threads and the mutex is released.
 Once the thread that is waiting is notified by another thread, it reacquires the mutex.
 
+Note that the thread calling `notify()` doesn't need to acquire the mutex of the waiting thread due to the `notify()` function itself.
+
 ## Bounded Buffer
 
 Let's go over the header file for the `Buffer` class.
@@ -94,13 +96,152 @@ public:
 
 ### Buffer::produce()
 
+The `produce()` function is where we implement the addition of data into an instance of the `Buffer` class in a thread safe manner.
+At a high level, we acquire a unique lock on the mutex, which is required by condition variables (as opposed to a basic std::mutex b/c of the condition variable function signatures).
+
+We then use the function `wait(lock, pred)` on the `not_full` condition variable.
+We want to wait if the buffer is full and only continue if another thread notifies us that the buffer is not full anymore.
+The above function signature is equivalent to (as specified in the [docs](https://en.cppreference.com/w/cpp/thread/condition_variable/wait)):
+
+```
+while (!pred()) {
+    wait(lock);
+}
+```
+
+Essentially the wait will only occur if the predicate is false.
+Since we want to only wait if the buffer is full, our predicate will return true if the buffer is not full.
+
+The code after the wait will only fire if the buffer is not full.
+We next need to add the input to the buffer and update the appropriate fields of the `Buffer` instance, mainly the size and the right index.
+
+At this point, we have finished modifying the `buffer` field and no longer need the lock, so we unlock it.
+
+We then call `notify()` with the `not_empty` condition variable because the buffer can't be empty as we have just added a value.
+This will notify any waiting consumer threads that may be waiting if the `buffer` was empty.
+
+Below is the full `produce()` function code:
+
+```
+void Buffer::produce(int thread_id, int num) {
+    // Acquire a unique lock on the mutex
+    std::unique_lock<std::mutex> unique_lock(mtx);
+    
+    std::cout << "thread " << thread_id << " produced " << num << "\n";
+    
+    // Wait if the buffer is full
+    not_full.wait(unique_lock, [this]() {
+        return buffer_size != BUFFER_CAPACITY;
+    });
+    
+    // Add input to buffer
+    buffer[right] = num;
+    
+    // Update appropriate fields
+    right = (right + 1) % BUFFER_CAPACITY;
+    buffer_size++;
+    
+    // Unlock unique lock
+    unique_lock.unlock();
+    
+    // Notify a single thread that buffer isn't empty
+    not_empty.notify_one();
+}
+```
+
 ### Buffer::consume()
+
+```
+int Buffer::consume(int thread_id) {
+    // Acquire a unique lock on the mutex
+    std::unique_lock<std::mutex> unique_lock(mtx);
+    
+    // Wait if buffer is empty
+    not_empty.wait(unique_lock, [this]() {
+        return buffer_size != 0;
+    });
+    
+    // Getvalue from position to remove in buffer
+    int result = buffer[left];
+    
+    std::cout << "thread " << thread_id << " consumed " << result << "\n";
+    
+    // Update appropriate fields
+    left = (left + 1) % BUFFER_CAPACITY;
+    buffer_size--;
+    
+    // Unlock unique lock
+    unique_lock.unlock();
+    
+    // Notify a single thread that the buffer isn't full
+    not_full.notify_one();
+    
+    // Return result
+    return result;
+}
+```
 
 ## Producer Consumer Code
 
 // go over main() code
 
+```
+// Takes in reference to a buffer and adds a random integer
+void produceInt(Buffer &buffer) {
+    for (int i = 0; i < 4; i++) {
+        // Generate random number between 1 and 10
+        int new_int = rand() % 10 + 1;
+        buffer.produce(i, new_int);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+```
+
+```
+// Takes in reference to a buffer and returns the latest int added
+// in the buffer
+void consumeInt(Buffer &buffer) {
+    for (int i = 0; i < 6; i++) {
+        buffer.consume(i);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+```
+
+```
+int main(int argc, const char * argv[]) {
+    std::cout << "Executing code in main...\n";
+    
+    // Initialize random seed
+    srand (time(NULL));
+    
+    // Create Buffer
+    Buffer buffer;
+    
+    // Create a thread to produce
+    std::thread produceThread0(produceInt, std::ref(buffer));
+    
+    std::thread consumeThread0(consumeInt, std::ref(buffer));
+    
+    std::thread produceThread1(produceInt, std::ref(buffer));
+    
+    std::thread consumeThread1(consumeInt, std::ref(buffer));
+    
+    std::thread produceThread2(produceInt, std::ref(buffer));
+    
+    produceThread0.join();
+    produceThread1.join();
+    produceThread2.join();
+    consumeThread0.join();
+    consumeThread1.join();
+    
+    std::cout << "Done!\n";
+    return 0;
+}
+```
+
 ## Resources
+- [Code used in this blog post](https://github.com/andrew128/ProducerConsumer)
 - [Baptiste Wicht's Blog post](https://baptiste-wicht.com/posts/2012/04/c11-concurrency-tutorial-advanced-locking-and-condition-variables.html)
 - [Back to Basics Concurrency Talk Slides by Arthur O'Dwyer](https://github.com/CppCon/CppCon2020/blob/main/Presentations/back_to_basics_concurrency/back_to_basics_concurrency__arthur_odwyer__cppcon_2020.pdf)
 - [C++ Documentation on Condition Variables](https://www.cplusplus.com/reference/condition_variable/condition_variable/)
