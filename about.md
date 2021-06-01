@@ -4,7 +4,8 @@ title: About
 permalink: /about/
 ---
 
-Class of 2021 at Brown University concentrating in Computer Science ScB.
+Software Engineer at Facebook.
+Graduated from Brown University in 2021 with Bachelors of Science in Computer Science.
 In my free time I enjoy finding new music and playing squash.
 
 [Here](http://www.sudocat.blogspot.com/) is the link to my old blog site.
