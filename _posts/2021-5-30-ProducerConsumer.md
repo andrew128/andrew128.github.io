@@ -256,6 +256,37 @@ void consumeInt(Buffer &buffer) {
 
 Note that the number of values produced equals the number of values consumed (otherwise the code would not complete because either a produce thread or a consume thread would be waiting for an event that would never happen).
 
+Here is a sample output:
+```
+Executing code in main...
+thread 0 produced 7
+thread 0 consumed 7
+thread 0 produced 9
+thread 0 consumed 9
+thread 0 produced 7
+thread 1 produced 5
+thread 1 consumed 7
+thread 1 produced 4
+thread 1 consumed 5
+thread 1 produced 8
+thread 2 produced 10
+thread 2 consumed 4
+thread 2 produced 1
+thread 2 consumed 8
+thread 2 produced 5
+thread 3 consumed 10
+thread 3 consumed 1
+thread 3 produced 10
+thread 3 produced 7
+thread 3 produced 9
+thread 4 consumed 5
+thread 4 consumed 10
+thread 5 consumed 7
+thread 5 consumed 9
+Done!
+Program ended with exit code: 0
+```
+
 ## Resources
 - [Code used in this blog post](https://github.com/andrew128/ProducerConsumer)
 - [Baptiste Wicht's Blog post](https://baptiste-wicht.com/posts/2012/04/c11-concurrency-tutorial-advanced-locking-and-condition-variables.html)
