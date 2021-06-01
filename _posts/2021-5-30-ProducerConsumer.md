@@ -151,6 +151,13 @@ void Buffer::produce(int thread_id, int num) {
 
 ### Buffer::consume()
 
+We now cover the thread safe `consumer()` function of the buffer.
+It is essentially the exact opposite of the `Buffer::produce()` code.
+We acquire the lock and only wait if the buffer is empty.
+We then remove the next value to remove from the buffer and update the appropriate fields.
+
+We end by unlocking the lock, notifying any thread that might be waiting that the buffer isn't full anymore, and returning the value we consumed.
+
 ```
 int Buffer::consume(int thread_id) {
     // Acquire a unique lock on the mutex
@@ -161,7 +168,7 @@ int Buffer::consume(int thread_id) {
         return buffer_size != 0;
     });
     
-    // Getvalue from position to remove in buffer
+    // Get value from position to remove in buffer
     int result = buffer[left];
     
     std::cout << "thread " << thread_id << " consumed " << result << "\n";
@@ -182,31 +189,12 @@ int Buffer::consume(int thread_id) {
 ```
 
 ## Producer Consumer Code
+We now write the code to actually call the `Buffer` class's methods.
+To start, we can create an instance of the `Buffer` class.
+The `srand` line is simply to randomize the seed for the produce function, which adds random numbers to the buffer.
 
-// go over main() code
-
-```
-// Takes in reference to a buffer and adds a random integer
-void produceInt(Buffer &buffer) {
-    for (int i = 0; i < 4; i++) {
-        // Generate random number between 1 and 10
-        int new_int = rand() % 10 + 1;
-        buffer.produce(i, new_int);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-}
-```
-
-```
-// Takes in reference to a buffer and returns the latest int added
-// in the buffer
-void consumeInt(Buffer &buffer) {
-    for (int i = 0; i < 6; i++) {
-        buffer.consume(i);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-}
-```
+We then create several produce and consume threads that call `produceInt` and `consumeInt` (described below).
+We finally call join on all the threads to wait for completion.
 
 ```
 int main(int argc, const char * argv[]) {
@@ -239,6 +227,34 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 ```
+
+The `produceInt()` function takes as input a reference to the `Buffer` class instance and generates a random number between 1 and 10 to add to the buffer, calling the buffer's `produce()` method.
+
+```
+// Takes in reference to a buffer and adds a random integer
+void produceInt(Buffer &buffer) {
+    for (int i = 0; i < 4; i++) {
+        // Generate random number between 1 and 10
+        int new_int = rand() % 10 + 1;
+        buffer.produce(i, new_int);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+```
+
+The `consumeInt()` function acts similarly except that it consumes a number from the buffer instead using the buffer's `consume()` method.
+```
+// Takes in reference to a buffer and returns the latest int added
+// in the buffer
+void consumeInt(Buffer &buffer) {
+    for (int i = 0; i < 6; i++) {
+        buffer.consume(i);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+```
+
+Note that the number of values produced equals the number of values consumed (otherwise the code would not complete because either a produce thread or a consume thread would be waiting for an event that would never happen).
 
 ## Resources
 - [Code used in this blog post](https://github.com/andrew128/ProducerConsumer)
