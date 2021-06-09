@@ -14,6 +14,12 @@ The code comes from the book [Writing An Compiler In Go](https://compilerbook.co
     - [Virtual machines]()
     - [The compiler in the book]()
 - [Concrete Code]()
+    - [Bytecode]()
+    - [Compiler and the Virtual Machine]()
+    - [Compiling Expressions]()
+    - [Conditionals]()
+    - [Symbol Table]()
+    - [Compiling Functions]()
 - [Resources]
 
 ## Introduction
@@ -159,8 +165,6 @@ type Instructions []byte
 type Opcode byte
 ```
 
-// DEFINITION
-
 Now that we've defined the type of an Opcode, lets see how actual opcodes are defined.
 The OpCode definitions are a map with an OpCode byte being the key and the definition being the value.
 A Definition type is defined to eb made up of the name of the operand (e.g. PUSH) and the number of bytes each operand takes up in OperandWidths.
@@ -262,7 +266,6 @@ func Start(in io.Reader, out io.Writer) {
 ```
 
 #### Compiler
-- what the compile(Program) function is doing
 The compiler has a `Compile(program)` function that parses the AST nodes and emits the respective bytecode.
 There is a switch statement for all the possible AST nodes.
 An example with a constant is shown below:
@@ -287,16 +290,84 @@ The compiler's emit function calls the bytecode `Make()` function (shown previou
 
 #### Virtual machine
 
-- the fetch decode execute cycle of the code - vm.go Run()
+The key part of the virtual machine is the fetch decode execute cycle performed that mimics the hardware CPU.
+This is encapsulated in the `Run()` function.
+The VM loops through all the instructions using the instruction pointer `ip` and **fetches** the current instruction.
+The instruction is then **decoded** using the switch/case statement.
+In the below code, the OpConstant case is shown.
+The instruction is **executed** by parsing the constant out of the bytecode and pushing it onto the virtual machine's stack.
+
+```
+func (vm *VM) Run() error {
+	for ip := 0; ip < len(vm.instructions); ip++ {
+		op := code.Opcode(vm.instructions[ip])
+
+		switch op {
+		case code.OpConstant:
+			constIndex := code.ReadUint16(vm.instructions[ip+1:])
+			ip += 2
+
+			err := vm.push(vm.constants[constIndex])
+			if err != nil {
+				return err
+			}
+
+        ...
+	}
+
+	return nil
+}
+```
 
 ### Compiling Expressions
-- compiling expressions << show code for simple add, subtract, etc.
+
+Now let's see how `Monkey` compiles and interprets the infix add expression (e.g. 5 + 3).
+There are two parts to adding this functionality: in the compiler and in the virtual machine.
+
+#### Compiler 
+In the compiler, we need to generate the bytecode corresponding to this infix expression.
+We can simply add the follwoing case to the compiler's `Compile()` function while its parsing the AST:
+
+```
+case *ast.InfixExpression:
+    ...
+    err = c.Compile(node.left)
+    ...
+    err = c.Compile(node.Right)
+    ...
+    case "+":
+        c.emit(code.OpAdd)
+    ...
+```
+
+First the `Compile` function recursively calls itself on either side.
+This is because our VM's add operation will operate on the previous two expressions appended to the stack.
+The above code then calls `emit()`, which uses the `Make()` function and Definitions map we mentioned previously to generate the proper bytecode (using the OpAdd's unique opcode).
+
+#### Virtual Machine
+In the virtual machine is where we parse the OpAdd.
+We can do this in the fetch decode execute cycle in run by simply adding another case:
+
+```
+case code.OpAdd:
+    right := vm.pop()
+    left := vm.pop()
+    leftValue := left.(*object.Integer).Value
+    rightValue := right.(*object.Integer).Value
+
+    result := leftValue + rightValue
+    vm.push(&object.Integer{Value: result})
+```
+
+This code pops the top two elements from the stack, adds them together, then pushes them back on.
 
 ### Conditionals
+- show code for simple if statement
 
 ### Symbol Table
 
 ### Compiling Functions
+- show code for simple function call
 
 ## Resources
 - Writing a Compiler in Go
