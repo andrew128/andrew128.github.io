@@ -6,8 +6,13 @@ This blog post introduces the world of compilers with an example in Golang.
 The code comes from the book [Writing An Compiler In Go](https://compilerbook.com/) by Thorsten Ball.
 
 ## Post Outline
-- [Introduction](#introduction-and-background)
+- [Introduction](#introduction)
 - [Background]
+    - [How do compilers work]()
+    - [How do compilers compare to interpreters]()
+    - [What about languages that are both compiled and interpreted]()
+    - [Virtual machines]()
+    - [The compiler in the book]()
 - [Concrete Code]()
 - [Resources]
 
@@ -17,7 +22,7 @@ The post is divided into two main parts: background (where I go over the basic o
 
 ## Background
 
-### How do compilers work?
+### How do compilers work
 
 In general, compilers take in source code and output machine code that can be executed on a specific architecture.
 More specifically, compilers take in source code and parse it into an AST (abstract syntax tree as covered in a [previous blog post](https://andrew128.github.io/Interpreters/)) using a lexer and a parser.
@@ -27,7 +32,7 @@ There are many more steps involved but these ones cover the major parts.
 
 INCLUDE PICTURE OF GENERAL PROCESS
 
-### How do compilers compare to interpreters?
+### How do compilers compare to interpreters
 
 Interpreters, like compilers, are another common kind of language processor.
 Both will have the same front end where the source code is lexed and parsed into an abstract syntax tree (AST).
@@ -38,7 +43,7 @@ A compiler, on the other hand, produces a target program in the target language 
 A compiler-produced program is typically much faster than an interpreter because the machine code from the compiler program is optimized for the specific architecture. 
 On the other hand, an interpreter can be much better at providing error messages that are language specific to the source code because there isn't the source/target language abstraction layer that the compiler has.
 
-### What about languages that are both compiled and interpreted?
+### What about languages that are both compiled and interpreted
 
 There are many popular languages like Java and Python that are both compiled and interpreted.
 
@@ -134,17 +139,153 @@ However, a register based machine is more complicated to implement simply becaus
 The code is from the book's `Monkey` language and is written in Golang.
 The compiler uses a stack based virtual machine.
 
-## Code
+## Concrete Code
 
 The following sections show concrete code from the compiler.
 
 ### Bytecode
 
-// endian
+The code shown is for a compiler using a stack based virtual machine.
+As mentioned previously, source code is compiled into bytecode and interpreted by the virtual machine to be executed.
+Bytecode can then be thought of as instructions that tell the virtual machine what to do.
 
-// code.go Make()
+The instructions, represented by opcodes, in the bytecode are each one byte in size.
+In addition, the operands (parameters to the opcodes) are also represented by bytes.
 
-### Virtual machine
+We can see this in the `Opcode` and `Instructions` definitions in `Monkey`.
+
+```
+type Instructions []byte
+type Opcode byte
+```
+
+// DEFINITION
+
+Now that we've defined the type of an Opcode, lets see how actual opcodes are defined.
+The OpCode definitions are a map with an OpCode byte being the key and the definition being the value.
+A Definition type is defined to eb made up of the name of the operand (e.g. PUSH) and the number of bytes each operand takes up in OperandWidths.
+
+```
+type Definition struct {
+	Name          string
+	OperandWidths []int
+}
+```
+
+For instance, the OpConstant operator, representing an integer, can be added to the definitions map like so:
+
+```
+var definitions = map[Opcode]*Definition{
+    ...
+	OpConstant: {"OpConstant", []int{2}},
+    ...
+}
+```
+
+The operand is 2 bytes wide, indicating that it is of type uint16.
+
+Based off a given OpCode, there will be a function that creates the corresponding bytecode.
+The function `Make()` takes in an opcode and its corresponding operands and returns a byte array representing the bytecode.
+The function works by looking up the opcode in the definition.
+It then creates a byte array where the first value is the opcode and the rest are any operands.
+
+```
+func Make(op Opcode, operands ...int) []byte {
+	def, ok := definitions[op]
+	if !ok {
+		return []byte{}
+	}
+
+	instructionLen := 1
+	for _, w := range def.OperandWidths {
+		instructionLen += w
+	}
+
+	instruction := make([]byte, instructionLen)
+	instruction[0] = byte(op)
+
+	offset := 1
+	for i, o := range operands {
+		width := def.OperandWidths[i]
+		switch width {
+		case 2:
+			binary.BigEndian.PutUint16(instruction[offset:], uint16(o))
+		case 1:
+			instruction[offset] = byte(o)
+		}
+		offset += width
+	}
+
+	return instruction
+}
+```
+
+#### Endianess
+Note that we can order the bytecode in one of two ways: left to right or right to left in terms of least significant to most significant bit.
+Different architectures order the bytecode in one of the two ways.
+
+### Compiler and Virtual Machine
+So we now know how bytecode is represented and created from opcodes and their operands (i.e. assembly).
+The compiler generates the bytecode from the parsed program.
+Let's first take a look at repl, which takes in a program, parses it into an AST as covered in the [interpreter blog post](https://andrew128.github.io/Interpreters/), and compiles it.
+The bytecode is then passed to the virtual machine, which interprets the bytecode.
+This is shown in the following code:
+```
+func Start(in io.Reader, out io.Writer) {
+	scanner := bufio.NewScanner(in)
+
+	for {
+		fmt.Printf(PROMPT)
+		scanned := scanner.Scan()
+		...
+
+		line := scanner.Text()
+		l := lexer.New(line)
+		p := parser.New(l)
+
+		program := p.ParseProgram()
+		...
+
+		comp := compiler.New()
+		err := comp.Compile(program)
+		...
+
+		machine := vm.New(comp.Bytecode())
+		err = machine.Run()
+		...
+
+		stackTop := machine.StackTop()
+		io.WriteString(out, stackTop.Inspect())
+		io.WriteString(out, "\n")
+	}
+}
+```
+
+#### Compiler
+- what the compile(Program) function is doing
+The compiler has a `Compile(program)` function that parses the AST nodes and emits the respective bytecode.
+There is a switch statement for all the possible AST nodes.
+An example with a constant is shown below:
+
+```
+func (c *Compiler) Compile(node ast.Node) error {
+	switch node := node.(type) {
+	
+    ...
+
+	case *ast.IntegerLiteral:
+		integer := &object.Integer{Value: node.Value}
+		c.emit(code.OpConstant, c.addConstant(integer))
+
+    ...
+
+	return nil
+}
+```
+
+The compiler's emit function calls the bytecode `Make()` function (shown previously) and appends the resulting bytes to the compiler's array of bytes `instructions` representing all the bytecode compiled so far.
+
+#### Virtual machine
 
 - the fetch decode execute cycle of the code - vm.go Run()
 
