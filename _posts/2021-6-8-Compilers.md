@@ -98,32 +98,64 @@ Memory is organized into groups of bytes called words.
 The size of the word varies depending on the architecture.
 Typically 32 and 64 bit word sizes are used in modern computers.
 
+There is also a memory region called the call stack, or just the stack.
+This region is where the CPU performs LIFO (last in first out) operations on.
+The call stack holds the return address, local variables, and function arguments.
+A stack data structure is chosen because it plays well with nested function calls.
+The pushing and popping of instructions fit how functions call one another before returning to their caller.
+[This blog post](https://andrew128.github.io/x86-binary/) goes into more detail about the calling conventions, specifically on the x86 architecture.
 
-// call stack
-
-// processor registers
+CPUs also have processor registers to store data.
+This is a step up from the memory hierarchy from RAM.
+It is much faster but has significantly less storage space, much like how RAM compares to disk.
+In an x86-64 architecture, the CPU has 16 general purpose registers holding 64 bits of data each.
+Registers are used for data that is used very frequently, such as a pointer to the next instruction to execute in the stack (i.e. the stack pointer).
 
 #### Physical Machine to Virtual Machine
 
 Now that we know what the virtual machine is emulating, lets see how the virtual machine mimics the hardware. 
-The CPU performs
+The virtual machine has a fetch decode execute cycle just like the CPU.
+It also has a program counter that points to the next instruction to execute.
+There is also a call stack and multiple registers.
+
+An example of a processor virtual machine is the Java Virtual Machine (JVM).
 
 #### Stack based VM vs Register based VM
 
+There are two broad categories of virtual machines: stack based virtual machines and register based virtual machines.
+
+A stack based virtual machine is a virtual machine that relies completely on its call stack to perform all operations.
+A register based virtual machine is a virtual machine that has a call stack and registers.
+Instructions can use the registers in addition to the stack.
+This results in less instructions compared to the stack based VM because we don't need to push/pop everytime to perform a computation.
+However, a register based machine is more complicated to implement simply because it has more pieces (i.e. the registers) in addition to the call stack.
+
 ### The compiler in the book
-The compiler is for the book's `Monkey` language and is written in Golang.
-The compiler we're writing uses a stack based virtual machine.
+The code is from the book's `Monkey` language and is written in Golang.
+The compiler uses a stack based virtual machine.
 
 ## Code
+
+The following sections show concrete code from the compiler.
 
 ### Bytecode
 
 // endian
 
-// 
+// code.go Make()
+
+### Virtual machine
+
+- the fetch decode execute cycle of the code - vm.go Run()
+
 ### Compiling Expressions
+- compiling expressions << show code for simple add, subtract, etc.
 
 ### Conditionals
+
+### Symbol Table
+
+### Compiling Functions
 
 ## Resources
 - Writing a Compiler in Go
