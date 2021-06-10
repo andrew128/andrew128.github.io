@@ -7,7 +7,7 @@ The code comes from the book [Writing An Compiler In Go](https://compilerbook.co
 
 ## Post Outline
 - [Introduction](#introduction)
-- [Background]
+- [Background]()
     - [How do compilers work]()
     - [How do compilers compare to interpreters]()
     - [What about languages that are both compiled and interpreted]()
@@ -20,7 +20,8 @@ The code comes from the book [Writing An Compiler In Go](https://compilerbook.co
     - [Conditionals]()
     - [Symbol Table]()
     - [Compiling Functions]()
-- [Resources]
+- [Conclusion]()
+- [Resources]()
 
 ## Introduction
 In this blog post we will be covering the main parts of writing a compiler.
@@ -362,12 +363,102 @@ case code.OpAdd:
 This code pops the top two elements from the stack, adds them together, then pushes them back on.
 
 ### Conditionals
-- show code for simple if statement
+Let's see how the compiler and virtual machine compile the source code and interpret the resulting bytecode for conditional statements (i.e. if statements). 
+
+#### Compiler
+
+When the source program has an if statement, the front end of the compiler (i.e. the lexer and parser) construct the abstract syntax tree with an `IfExpression` node representing the conditional.
+
+In our compiler's `Compile()` function, we can add a new case for our switch statement as we're traversing the AST.
+
+```
+case *ast.IfExpression:
+    err := c.Compile(node.Condition)
+    if err != nil {
+        return err
+    }
+
+    // Emit an `OpJumpNotTruthy` with a bogus value
+    jumpNotTruthyPos := c.emit(code.OpJumpNotTruthy, 9999)
+
+    err = c.Compile(node.Consequence)
+    if err != nil {
+        return err
+    }
+
+    if c.lastInstructionIs(code.OpPop) {
+        c.removeLastPop()
+    }
+
+    // Emit an `OpJump` with a bogus value
+    jumpPos := c.emit(code.OpJump, 9999)
+
+    afterConsequencePos := len(c.currentInstructions())
+    c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
+
+    if node.Alternative == nil {
+        c.emit(code.OpNull)
+    } else {
+        err := c.Compile(node.Alternative)
+        if err != nil {
+            return err
+        }
+
+        if c.lastInstructionIs(code.OpPop) {
+            c.removeLastPop()
+        }
+    }
+
+    afterAlternativePos := len(c.currentInstructions())
+    c.changeOperand(jumpPos, afterAlternativePos)
+```
+
+So what's going on in the above code?
+First, the condition is compiled by calling `Compile()` recursively.
+This condition should evaluate into true or false value that is then emitted from the compiler.
+
+Then an OpJumpNotTruthy opcode is emitted.
+This is a simple OpCode that tells the virtual machine to jump to a different offset in the instructions if the previous value in the stack is not true.
+This prevents the block of statements inside the if to be executed if the condition is false.
+
+Then the `consequence` of the node is compiled by calling `Compile()` recursively.
+The consequence is what is executed if the if statement conditional was true.
+If the if statement conditional was true then the OpJumpNotTruthy would not cause the virtual machine's instruction pointer to jump and would instead execute the consequence bytecode.
+
+Then the `OpJump` bytecode is emitted.
+At this point, we want to jump over the bytecode to be loaded in next (i.e. the code in the else statement if one exists, called the node's alternative).
+
+After this we change the operand to the OpJumpNotTruthy because we want to jump to after the OpJump bytecode right before the alternative field to be compiled next.
+We could only calculate the offset after the OpJump bytecode was created so as to know how far to jump to after that op.
+
+We then emit the bytecode for the node's alternative field, which can be NULL if there is no else statement.
+
+We then change the operand (parameter) to the OpJump to be the current location (now that we know the offset of the bytecode up until this point).
+We had to change the operand after the alternative was compiled so we could know how much to jump so as to land right after the alternative.
+
+The below picture taken from the book illustrates the bytecode that is generated from a simple if/else conditional statement.
+
+// Insert picutre from location 3528 in book!!!!!!!!!!!!!!!!!
+
+#### Virtual Machine
 
 ### Symbol Table
+- probably has something to do with variables
+
+#### Compiler
+
+#### Virtual Machine
 
 ### Compiling Functions
 - show code for simple function call
+
+#### Compiler
+
+#### Virtual Machine
+
+## Conclusion
+In this blog post we covered basic concepts in compilers, specifically compilers that use virtual machines to interpret compiled bytecode.
+These concepts were illustrated through the `Monkey` language from the book Writing a Compiler in Go with code examples on how bytecode is generated, how expressions, conditionals, and functions are compiled, and how variables are implemented.
 
 ## Resources
 - Writing a Compiler in Go
