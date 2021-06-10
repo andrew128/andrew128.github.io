@@ -442,6 +442,29 @@ The below picture taken from the book illustrates the bytecode that is generated
 
 #### Virtual Machine
 
+The main parts of the virtual machine that have to do with conditionals are interpreting the OpJump and OpJumpNotTruthy opcodes.
+Essentially two cases are added to the switch statement that performs the decoding of the VM's fetch decode execute cycle.
+
+```
+case code.OpJump:
+    pos := int(code.ReadUint16(ins[ip+1:]))
+    vm.currentFrame().ip = pos - 1
+
+case code.OpJumpNotTruthy:
+    pos := int(code.ReadUint16(ins[ip+1:]))
+    vm.currentFrame().ip += 2
+
+    condition := vm.pop()
+    if !isTruthy(condition) {
+        vm.currentFrame().ip = pos - 1
+    }
+```
+
+In the case of the OpJump code, we simply read in the operand and set the instruction pointer to be that operand.
+In the case of hte OpJumpNotTruthy opcode, we initially assume that the condition is true and set the instruction pointer to be after the current opcode and operand.
+Then we check the condition and if its not truthy, then we set the instruction pointer to be at that position.
+The -1 of the position is an implementation detail resulting from the fetch decode execute cycle in `Run()` incrementing the instruction pointer by 1 every iteration.
+
 ### Symbol Table
 - probably has something to do with variables
 
