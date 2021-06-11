@@ -658,6 +658,6 @@ In this blog post we covered basic concepts in compilers, specifically compilers
 These concepts were illustrated through the `Monkey` language from the book Writing a Compiler in Go with code examples on how bytecode is generated, how expressions, conditionals, and functions are compiled, and how variables are implemented.
 
 ## Resources
-- Writing a Compiler in Go
-- Compilers: Principles, Techniques, and Tools
-- The Elements of Computing Systems
+- [Writing a Compiler in Go](https://compilerbook.com/)
+- [Compilers: Principles, Techniques, and Tools](#https://www.amazon.com/Compilers-Principles-Techniques-Tools-2nd/dp/0321486811)
+- [The Elements of Computing Systems](https://www.amazon.com/Elements-Computing-Systems-Building-Principles/dp/0262640686)
