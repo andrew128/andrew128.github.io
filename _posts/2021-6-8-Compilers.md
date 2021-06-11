@@ -538,11 +538,120 @@ case code.OpGetGlobal:
 ```
 
 ### Compiling Functions
-- show code for simple function call
+To implement function calls, we want to emit bytecode instructions that represent Monkey's calling convention.
+Calling convention is a scheme for how functions call one another.
+In a [previous blog post](https://andrew128.github.io/x86-binary/) we saw how calling conventions for x86 worked.
+Once the bytecode is emitted, we want the virtual machine to actually execute the instructions.
 
 #### Compiler
+On the compiler side of things, we can add three new cases to the switch statement in `Compile()` while traversing the AST.
+The first is the `ast.CallExpression`:
+
+```
+case *ast.CallExpression:
+    err := c.Compile(node.Function)
+    if err != nil {
+        return err
+    }
+
+    for _, a := range node.Arguments {
+        err := c.Compile(a)
+        if err != nil {
+            return err
+        }
+    }
+
+    c.emit(code.OpCall, len(node.Arguments))
+```
+
+This is what is first encountered in the ast during a function call.
+The case recursively calls `Compile()` on the node's functions and all the nodes arguments.
+Then bytecode is emitted for the op `OpCall`.
+
+When the actual function is called, we hit the `ast.FunctionLiteral` case.
+
+```
+case *ast.FunctionLiteral:
+    ...
+
+    for _, p := range node.Parameters {
+        c.symbolTable.Define(p.Value)
+    }
+
+    err := c.Compile(node.Body)
+
+    ...
+
+    compiledFn := &object.CompiledFunction{
+        Instructions:  instructions,
+        NumLocals:     numLocals,
+        NumParameters: len(node.Parameters),
+    }
+    c.emit(code.OpConstant, c.addConstant(compiledFn))
+```
+
+In the above, we define the parameters in the symbol table and compile the node body.
+Then a constant is returned representing the unique index of the function.
+
+When the body of the function is being compiled, it will hit a return statement.
+In the following case, the return value is compiled and placed onto the stack if not null.
+Then the OpReturnValue code is emitted.
+
+```
+case *ast.ReturnStatement:
+    err := c.Compile(node.ReturnValue)
+    ...
+
+    c.emit(code.OpReturnValue)
+```
 
 #### Virtual Machine
+The virtual machine has the job of interpreting and executing the bytecode given by the compiler.
+Let's see how the virtual machine executes the function bytecode it is given.
+We add two cases to the virtual machine's fetch decode execute loop in `Run()`.
+The first is for OpCall.
+The arguments are read in and passed into the helper `callFunction`.
+```
+case code.OpCall:
+    numArgs := code.ReadUint8(ins[ip+1:])
+    vm.currentFrame().ip += 1
+
+    err := vm.callFunction(int(numArgs))
+    ...
+```
+
+The helper function access the CompiledFunction from the value stored on the stack representing the unique index of the function.
+A new frame representing the scope of the function is pushed onto the stack.
+
+```
+func (vm *VM) callFunction(numArgs int) error {
+	fn, ok := vm.stack[vm.sp-1-numArgs].(*object.CompiledFunction)
+	...
+
+	frame := NewFrame(fn, vm.sp-numArgs)
+	vm.pushFrame(frame)
+
+	vm.sp = frame.basePointer + fn.NumLocals
+
+	return nil
+}
+```
+
+The stack pointer is updated and the function returns as the fetch decode execute cycle continues and executes the function body.
+This continues until the return statement from the function is hit.
+At this point, the return value is popped off of the stack as well as the stack frame that was pushed during the function call.
+The return value is then pushed back onto the stack for future use by the user program.
+
+```
+case code.OpReturnValue:
+    returnValue := vm.pop()
+
+    frame := vm.popFrame()
+    vm.sp = frame.basePointer - 1
+
+    err := vm.push(returnValue)
+    ...
+```
 
 ## Conclusion
 In this blog post we covered basic concepts in compilers, specifically compilers that use virtual machines to interpret compiled bytecode.
