@@ -37,7 +37,7 @@ The AST is then converted into an intermediate representation upon which several
 Then a code generator outputs the target machine code.
 There are many more steps involved but these ones cover the major parts.
 
-INCLUDE PICTURE OF GENERAL PROCESS
+![_config.yml]({{ site.baseurl }}/images/Interpreters/compilerVsInterpreter.png)
 
 ### How do compilers compare to interpreters
 
@@ -89,7 +89,8 @@ The memory (Random Access Memory) stores the program's data and instructions.
 There is also mass storage in the form of hard drives and disks that make up non volatile memory.
 Then there are input/output devices like the keyboard and the display.
 
-// INCLUDE PICTURE FROM WIKIPEDIA OF VON NEUMANN ARCHITECTURE (https://en.wikipedia.org/wiki/Von_Neumann_architecture)
+
+![_config.yml]({{ site.baseurl }}/images/Compilers/cpuvonneumann.png)
 
 #### CPU
 
@@ -438,7 +439,7 @@ We had to change the operand after the alternative was compiled so we could know
 
 The below picture taken from the book illustrates the bytecode that is generated from a simple if/else conditional statement.
 
-// Insert picutre from location 3528 in book!!!!!!!!!!!!!!!!!
+![_config.yml]({{ site.baseurl }}/images/Compilers/ifstatement.png)
 
 #### Virtual Machine
 
@@ -510,6 +511,9 @@ case *ast.Identifier:
 
     c.loadSymbol(symbol)
 ```
+
+The following is the bytecode generated.
+![_config.yml]({{ site.baseurl }}/images/Compilers/variables.png)
 
 #### Virtual Machine
 
