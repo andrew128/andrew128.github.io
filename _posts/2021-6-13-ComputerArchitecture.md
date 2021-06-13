@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Computer Hardware and Architecture: A Bird’s Eye View
+title: Computer Hardware and Architecture - A Bird’s Eye View
 ---
 
 In this blog post we take a step lower from our previous blog posts on compilers/virtual machines and operating systems. It will string together how physics and hardware are built and used to execute our abstract thoughts and ideas illustrated in higher level languages.
