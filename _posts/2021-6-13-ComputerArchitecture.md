@@ -7,8 +7,22 @@ In this blog post we take a step lower from our previous blog posts on compilers
 
 ## Post Outline
 - [Introduction](#introduction)
-    - [Operating Systems]()
-    - [Compilers]()
+    - [Operating Systems](#operating-systems)
+    - [Compilers](#compilers)
+- [Assembler](#assembler)
+    - [What is an assembler](#what-is-an-assembler)
+    - [Binary Machine code](#binary-machine-code)
+    - [How does an assembler turn symbolic assembly into machine code](#how-does-an-assembler-turn-symbolic-assembly-into-machine-code)
+- [CPU](#cpu)
+    - [von Neumann Architecture](#von-neumann-architecture)
+    - [How CPU executes machine code](#how-cpu-executes-machine-code)
+- [Storing Data](#storing-data)
+- [ALU Computations](#alu-computations)
+    - [How does an ALU perform computations](#how-does-an-alu-perform-computations)
+- [Transistors](#transistors)
+    - [Not Gate](#not-gate)
+    - [And Gate](#and-gate)
+    - [Or gate](#or-gate)
 - [Conclusion](#conclusion)
 - [Resources](#resources)
 
@@ -134,7 +148,7 @@ The next iteration of this cycle will then have the program counter pointing to 
 #### Decode
 Instruction decoding involves parsing the input instruction (represented in machine code) into the operator and its corresponding operands if any.
 This is done using the ISA.
-The control unit (built out of circuits) 
+The control unit (built out of circuits) performs the decoding and determines what instruction will be executed.
 
 #### Execute
 During the execution step in the cycle, different parts of the chip are signaled to execute the instructions.
@@ -180,6 +194,7 @@ Setting reset to 1 resets output to 0.
 If neither are set then the latch outputs the last output.
 
 <!-- AND OR LATCH PICTURE !!!!!!!!!!!!!-->
+![_config.yml]({{ site.baseurl }}/images/ArchitectureAndHardware/andorlatch.png)
 
 [Source](https://www.youtube.com/watch?v=fpnE6UAfbtU&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=8)
 
@@ -187,6 +202,7 @@ A gated latch adds several gates to the AND OR LATCH that modify the inputs to b
 The output of the gated latch is set to the data input only if the write enable wire is set.
 
 <!-- GATED LATCH PICTURE!!!!!!!!!!!!!!!! -->
+![_config.yml]({{ site.baseurl }}/images/ArchitectureAndHardware/gatedlatch.png)
 
 [Source](https://www.youtube.com/watch?v=fpnE6UAfbtU&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=8)
 
@@ -226,15 +242,27 @@ The carry bit is set if the inputs are 1 and 1 (resulting in the need to carry).
 
 <!-- INSERT PICTURE OF HALF ADDER!!!!!!! -->
 
+![_config.yml]({{ site.baseurl }}/images/ArchitectureAndHardware/halfadder.png)
+
+[Source](https://www.youtube.com/watch?v=1I5ZMmrOfnA&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=7)
+
 To build a Full Adder that can add numbers with more bits together, we can combine Half Adders.
 Full adders take in three single bit inputs and output a carry bit and a sum.
 Full adders are built using two half adders:
 
 <!-- INSERT PICTURE OF FULL ADDER!!!!!!!!!!!!!!!!!! -->
 
+![_config.yml]({{ site.baseurl }}/images/ArchitectureAndHardware/fulladder.png)
+
+[Source](https://www.youtube.com/watch?v=1I5ZMmrOfnA&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=7)
+
 To build a full 8 bit adder, we can combine 1 half adder and 7 full adders like so:
 
 <!-- INSERT PICTURE OF 8 bit ripple carry adder -->
+
+![_config.yml]({{ site.baseurl }}/images/ArchitectureAndHardware/rippleadder.png)
+
+[Source](https://www.youtube.com/watch?v=1I5ZMmrOfnA&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=7)
 
 This is called a ripple carry adder.
 Because it takes time for the carrys to "ripple" across, modern computer use a more complicated carry look ahead adder.
@@ -248,6 +276,8 @@ Hence the ALU gets its name of Arithmetic AND Logic Unit.
 An 8 bit CPU's ALU could look like the following:
 
 <!-- INSERT PICTURE OF ALU -->
+
+![_config.yml]({{ site.baseurl }}/images/ArchitectureAndHardware/alu.png)
 
 [Source](https://www.youtube.com/watch?v=1I5ZMmrOfnA&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=7)
 
@@ -285,6 +315,8 @@ This is because of the electrons flowing away from the middle positively charged
 If a positive voltage is applied through the input, it cancels out the electrons repelling the current and allows electrons coming from one end to the other.
 
 <!-- INCLUDE IMAGE -->
+
+![_config.yml]({{ site.baseurl }}/images/ArchitectureAndHardware/transistor.png)
 [Source](https://www.youtube.com/watch?v=OwS9aTE2Go4)
 
 Below are some elementary gates from which more complex composite gates can be built out of.
@@ -295,7 +327,9 @@ Note that gates today are usually designed on hardware simulators using a Hardwa
 In a not gate, we have an output wire extend from the top input wire.
 If the input is on, the top current electrode is connected to the ground and the output remains off.
 If the input is off, the top electrode isn't connected to the ground so it goes through the output, turning it on.
+
 <!-- include image of not gate -->
+![_config.yml]({{ site.baseurl }}/images/ArchitectureAndHardware/notgate.png)
 [Source](https://www.youtube.com/watch?v=gI-qXk7XojA&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=4)
 
 ### And Gate
@@ -303,6 +337,8 @@ If the input is off, the top electrode isn't connected to the ground so it goes 
 To create an AND gate, we can connect two transistors in series as shown below.
 It can be seen that the inputs for both transistors need to be turned on in order for current to flow to the output wire.
 <!-- include image of and gate -->
+
+![_config.yml]({{ site.baseurl }}/images/ArchitectureAndHardware/andgate.png)
 [Source](https://www.youtube.com/watch?v=gI-qXk7XojA&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=4)
 
 ### Or Gate
@@ -310,6 +346,8 @@ It can be seen that the inputs for both transistors need to be turned on in orde
 To create an OR gate, we connect two transistors in parallel.
 From the below diagram, we can see that if either transistor's input is on, current will flow from the left side to the output wire.
 <!-- include image of or gate -->
+
+![_config.yml]({{ site.baseurl }}/images/ArchitectureAndHardware/orgate.png)
 [Source](https://www.youtube.com/watch?v=gI-qXk7XojA&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=4)
 
 ## Conclusion
