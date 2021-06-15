@@ -145,12 +145,53 @@ The instructions fed in cause certain transistors to open or close which connect
 
 
 
-## Storing Data with Sequential Chips
+## Storing Data
 
-### How is data stored
+<!-- RAM - can store data so long as power is on -->
+<!-- single bit saver -->
+<!-- can create circuits that loop back on themselves -->
+<!-- And or latch - set inptu sets output to 1, resets output to 0  -->
+<!-- called latch because latches onto particular value -->
+<!-- if both set and reset are 0 then latch just outputs whatever was last input -->
 
+<!-- gated latch - gate can be open for storing data or not -->
+<!-- data input is input -->
+<!-- write enable is 1 if we want to set or 0 if not -->
+<!-- gated latch stores everything at 1 bit -->
 
+<!-- group of latches is called a register (8 bit register has 8 latches) -->
+<!-- matrix latch -> 1100 01000 row and column -->
+<!-- multiplexer -->
 
+<!-- RAM -> can access any address in any order -->
+<!-- other types of ram, (static ram, dynamic ram) -->
+<!-- use different ways to store bits -->
+
+Storing data amounts to storing bits (1s and 0s).
+We will look at how RAM works (memory that is used when the power is on as opposed to persistant storage such as disk).
+RAM stands for Random Access Memory.
+It is called this because memory can be accessed at any address in any order (i.e. randomly).
+Let's look at a specific type of RAM: SRAM (static random access memory).
+SRAM uses latches to store bits.
+A latch is a circuit that "latches" onto a particular value.
+Below is an example of an AND OR latch with two inputs: set and reset.
+Setting set to 1 sets output to 1.
+Setting reset to 1 resets output to 0.
+If neither are set then the latch outputs the last output.
+
+<!-- AND OR LATCH PICTURE !!!!!!!!!!!!!-->
+
+[Source](https://www.youtube.com/watch?v=fpnE6UAfbtU&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=8)
+
+A gated latch adds several gates to the AND OR LATCH that modify the inputs to be data input and write enable.
+The output of the gated latch is set to the data input only if the write enable wire is set.
+
+<!-- GATED LATCH PICTURE!!!!!!!!!!!!!!!! -->
+
+[Source](https://www.youtube.com/watch?v=fpnE6UAfbtU&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=8)
+
+These gated latches are put into a matrix so that we can efficiently have lots of memory with minimal wiring required.
+We can use a multiplexer (gate that combines many inputs into a single output) to get the index for a specific row and column in the matrix.
 
 ## ALU Computations
 
