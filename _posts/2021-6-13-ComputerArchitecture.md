@@ -154,11 +154,68 @@ The instructions fed in cause certain transistors to open or close which connect
 
 ## ALU Computations
 
+The ALU (arithmetic logic unit) is the part of the CPU that performs all the calculations a computer needs to make.
+It is built with boolean logic gates made out of transistors that are described in the next section.
+
 ### How does an ALU perform computations
+<!-- has arithmetic (addition, subtraction, increment) and logic unit -->
+<!-- add 2 numbers together -->
+<!-- use high level of abstraction and build it out of and, or, not, xor -->
+<!-- two inputs A and B, one output currently all single bits, 1 bit adder can use XOR-->
+<!-- need a carry bit, half adder - inputs a and b, output and carry bit -->
+<!-- make full adder out of it -> a, b, c, and output carry and sum -->
+<!-- building an 8 bit adder -->
+<!-- need full adder that inputs carry bit -->
+<!-- do this in big chain, need 8 full adders for 8 bits -->
+<!-- above is called the ripple carry adder -->
 
+<!-- modern computers use carry look ahead adder instead of the 8 -->
 
+<!-- more complicated processors will have ALUs that have dedicated circuits for multiplciation - takes alot more logic gates -->
 
+<!-- LOGIC UNIT - and, or, not, check if number is negative -->
 
+<!-- ALU has input a, b, each 8 bits, operation code is 4 bits that tells ALU what operation to perform (add, subtract, etc.), also output flags like overflow, zero, negative -->
+
+The ALU can perform two types of computations: arithmetic (e.g. addition, subtraction, increment) and logical (e.g. AND, OR, NOT).
+Let's take a look at how to add two numbers together.
+We will be building the addition circuitry out of AND and XOR gates.
+The first step is a half adder, which essentially adds two single bit numbers together and outputs a single carry bit.
+The carry bit is set if the inputs are 1 and 1 (resulting in the need to carry).
+
+<!-- INSERT PICTURE OF HALF ADDER!!!!!!! -->
+
+To build a Full Adder that can add numbers with more bits together, we can combine Half Adders.
+Full adders take in three single bit inputs and output a carry bit and a sum.
+Full adders are built using two half adders:
+
+<!-- INSERT PICTURE OF FULL ADDER!!!!!!!!!!!!!!!!!! -->
+
+To build a full 8 bit adder, we can combine 1 half adder and 7 full adders like so:
+
+<!-- INSERT PICTURE OF 8 bit ripple carry adder -->
+
+This is called a ripple carry adder.
+Because it takes time for the carrys to "ripple" across, modern computer use a more complicated carry look ahead adder.
+
+Note that the adder can also be used to perform more complicated operations like multiplication.
+While computer chips in simpler devices like TV remotes will use the adder for multiplication, laptops and mobile devices will most likely have dedicated chips to performing multiplication (RISC vs CISC).
+
+In addition to arithmetic computations like addition, the ALU can also perform logical computations like AND, OR, NOT, checking if a number is negative, and more.
+Hence the ALU gets its name of Arithmetic AND Logic Unit.
+
+An 8 bit CPU's ALU could look like the following:
+
+<!-- INSERT PICTURE OF ALU -->
+
+[Source](https://www.youtube.com/watch?v=1I5ZMmrOfnA&list=PLH2l6uzC4UEW0s7-KewFLBC1D0l6XRfye&index=7)
+
+We have two inputs each of 8 bits.
+There is an operation code that specifies the operation we want to perform.
+For example 0100 might correspond to the ADD operation.
+The output is the output of the 8 bit operation (also in 8 bits).
+There are also flag outputs that may be set depending on the output.
+For example the zero bit will be set if the output is 0.
 
 ## Transistors
 
