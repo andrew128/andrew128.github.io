@@ -25,8 +25,8 @@ The post will also cover relevant core C++ concepts used to implement the string
 - [Increasing Size of String](#increasing-size-of-string)
 - [Decreasing Size of String](#decreasing-size-of-string)
 - [Getting the String Data](#getting-the-string-data)
-- [Playground Code](#playground-code)
-- [Conclusion](#conclusion)
+<!-- - [Playground Code](#playground-code) -->
+<!-- - [Conclusion](#conclusion) -->
 - [Resources](#resources)
 
 ## Intro
@@ -600,6 +600,9 @@ Note that built in expect is only a gcc construct to another compiler like clang
 <!-- erase deletes part of the string, reducing its length -->
 <!-- pop back just removes the last character, think erase will be more interesting -->
 
+Let's take a look at a function that decreases the size of the string: `erase()`.
+The core function signature is the following:
+
 <!-- ok so lets take a look at erase(...) -->
 <!-- the key function signature is the pos = 0,n = npos -->
 <!-- the other 2 erase functions call this function -->
@@ -616,17 +619,12 @@ Note that built in expect is only a gcc construct to another compiler like clang
   }
 ```
 
-<!-- at the core this function error checks the input and makes sure that the parameters are valid  -->
-<!-- then it copies the part of the string after the removed part (if any) 
+At the core this function error checks the input and makes sure that the parameters are valid.
+Then it copies the part of the string after the removed part (if any) 
 up into where the erased part of the string originally was, effectively
-cutting out the desired part of the string
+cutting out the desired part of the string.
+Then the string is resized by calling the resize function (code shown below).
 
-then the string is resized by calling the resize function
--->
-
-<!-- the resize function branches into either one of 2 categories-->
-<!-- the first calls the shrink -->
-<!-- the second branch calls expandNoinit as descsueed above and then initialized the newly allocated space using  -->
 ```
 template <typename E, class T, class A, class S>
 inline void basic_fbstring<E, T, A, S>::resize(
@@ -645,6 +643,11 @@ inline void basic_fbstring<E, T, A, S>::resize(
 }
 ```
 
+
+The resize function branches into either one of 2 categories.
+The first calls the shrink (shown below).
+The second branch calls expandNoinit as described above and then initialized the newly allocated space using.
+
 ```
   void shrink(const size_t delta) {
     if (category() == Category::isSmall) {
@@ -658,7 +661,8 @@ inline void basic_fbstring<E, T, A, S>::resize(
   }
 ```
 
-below is the shrink size for the small
+The function `shrink()` is again divided into a separate branch for each of small, medium, and large.
+Below is the shrink size for the small.
 
 ```
 template <class Char>
@@ -668,7 +672,8 @@ inline void fbstring_core<Char>::shrinkSmall(const size_t delta) {
   setSmallSize(smallSize() - delta);
 }
 ```
-it basically calls setSmall size which: null terminates the string at the new size
+
+It basically calls `setSmallSize()` which null terminates the string at the new size.
 
 ```
   void setSmallSize(size_t s) {
@@ -683,7 +688,7 @@ it basically calls setSmall size which: null terminates the string at the new si
   }
 ```
 
-shrink medium updates the mediumlarge struct's size field and null terminates the data
+The function `shrinkMedium()` updates the MediumLarge struct's size field and null terminates the data.
 ```
 template <class Char>
 inline void fbstring_core<Char>::shrinkMedium(const size_t delta) {
@@ -695,7 +700,8 @@ inline void fbstring_core<Char>::shrinkMedium(const size_t delta) {
 }
 ```
 
-shrink large 
+Below is `shrinkLarge()`, which calls swap.
+
 ```
 template <class Char>
 inline void fbstring_core<Char>::shrinkLarge(const size_t delta) {
@@ -710,7 +716,8 @@ inline void fbstring_core<Char>::shrinkLarge(const size_t delta) {
 }
 ```
 
-it calls swap as defined below which basically swaps the newly created fbstring_core's ml field with the current ml's field
+The function `swap()`, shown below, swaps the newly created fbstring_core's ml field with the current ml's field.
+
 ```
   void swap(fbstring_core& rhs) {
     auto const t = ml_;
@@ -732,14 +739,15 @@ Getting the string data is very simple and simply involves calling the at functi
   }
 ```
 
-## Playground Code
+<!-- ## Playground Code -->
 <!-- try out using the string class - look at their string tests to see how to test this -->
 <!-- try out different sizes -->
 
 <!-- how to specify the FOLLY_LIKELY/UNLIKELY macros? -->
 
-## Conclusion
+<!-- ## Conclusion -->
 
 ## Resources
 - [GCC/GNU built in expect](https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html)
 - [Folly Github](https://github.com/facebook/folly/blob/master/folly/docs/FBString.md)
+- [CppCon 2016: Nicholas Ormrod “The strange details of std::string at Facebook"](https://www.youtube.com/watch?v=kPR8h4-qZdk)
