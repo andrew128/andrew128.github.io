@@ -4,7 +4,7 @@ title: Facebook's C++ String Class in Folly
 ---
 
 In this blog post we will take an in depth look at how [Facebook's C++ String from Folly](https://github.com/facebook/folly/blob/master/folly/docs/FBString.md) works.
-The post will also cover relevant core C++ concepts used to implement the string class.
+Specifically we will examine how the string class adapts to different operations depending on the size of the string.
 
 ## Post Outline
 <!-- go over core string - how it is represented -->
