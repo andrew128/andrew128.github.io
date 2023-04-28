@@ -129,9 +129,11 @@ brew install wimlib && rsync -vha --exclude=sources/install.wim /Volumes/CCCOMA_
 ```
 
 ### Formatting the SSD Properly
-I ran into numerous issues where the Windows installer was spitting out some pretty cryptic error messages. 
-Eventually I started to narrow down to the format/setup/solution:
-- My motherboard uses a UEFI BIOS (the newer BIOS that replaced the legacy BIOS) and as a result I would need to use GPT as my partitioning format isntead of MBR (the older partitioning standard). MBR/GPT tell the OS how the partitions/data on the drive are organized. To do this I ran the following in command prompt:
+Since I was running into cryptic error messages trying to boot directly from my usb drive that I made bootable, I decided to copy over the boot data from my usb directly onto my SSD and load from there (and then delete the installation partition afterwards). 
+Some things I learned:
+- A partition is space crafted on a disk (i.e. partition the disk into separate spaces). There are two partitioning schemes: GPT and MBR. MBR is for older BIOS versions. GPT is for newer UEFI BIOS versions which I have. 
+- A volume is a partition that has been formatted into a file system (e.g. NTFS, FAT32)
+
 ```
 diskpart // start up the Windows disk partitioning tool
 list disk // identify my SSD
@@ -140,8 +142,22 @@ select disk <disk number> // select my SSD
 // the following commands reformat and exit diskpart
 clean
 convert gpt
+create partition primary size=60000
+format fs=ntfs quick
+// assigns drive letter
+assign
+
+// Exit windows disk partitioning tool
 exit
+
+// Now copy from usb drive into volume 
+// See https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/xcopy for doc on command line flags
+xcopy <source volume> <destination volume> /e /h /k
 ```
+
+NOTE: make sure to remove the usb drive after copying over the data from the usb.
+Otherwise the installer will crash again. 
+
 
 ## Reflection
 In the future I may try to have better cable management but it's not a priority right now. 
