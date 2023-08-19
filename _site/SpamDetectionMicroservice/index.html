@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Spam Detection Microservice Using Snorkel – Andrew Wei – </title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="This post walks through the process of putting a spam detection model using Snorkel into a microservice using Flask, Docker, and AWS.
+" />
+    <meta property="og:description" content="This post walks through the process of putting a spam detection model using Snorkel into a microservice using Flask, Docker, and AWS.
+" />
+    
+    <meta name="author" content="Andrew Wei" />
+
+    
+    <meta property="og:title" content="Spam Detection Microservice Using Snorkel" />
+    <meta property="twitter:title" content="Spam Detection Microservice Using Snorkel" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Andrew Wei - " href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://avatars0.githubusercontent.com/u/8172167?s=400&u=27034bc93779390bfbaca21727973a54058fc093&v=4" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Andrew Wei</a></h1>
+            <p class="site-description"></p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+  tex2jax: {
+  inlineMath: [['$','$'], ['\\(','\\)']],
+  processEscapes: true},
+  jax: ["input/TeX","input/MathML","input/AsciiMath","output/CommonHTML"],
+  extensions: ["tex2jax.js","mml2jax.js","asciimath2jax.js","MathMenu.js","MathZoom.js","AssistiveMML.js", "[Contrib]/a11y/accessibility-menu.js"],
+  TeX: {
+  extensions: ["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js"],
+  equationNumbers: {
+  autoNumber: "AMS"
+  }
+  }
+  });
+  </script>
+<article class="post">
+  <h1>Spam Detection Microservice Using Snorkel</h1>
+
+  <div class="date">
+    Written on September  2, 2020
+  </div>
+  <div class="entry">
+    <p>This post walks through the process of putting a spam detection model using <a href="https://github.com/snorkel-team/snorkel">Snorkel</a> into a microservice using Flask, Docker, and AWS.</p>
+
+<h2 id="post-outline">Post Outline</h2>
+<ul>
+  <li><a href="#spam-detection-using-snorkel">Spam Detection using Snorkel</a></li>
+  <li><a href="#interfacing-with-snorkel-using-flask">Interfacing with Snorkel using Flask</a></li>
+  <li><a href="#deployment">Deployment</a></li>
+  <li><a href="#code">Code</a></li>
+  <li><a href="#resources">Resources</a></li>
+</ul>
+
+<h2 id="spam-detection-using-snorkel">Spam Detection using Snorkel</h2>
+<p>We will be deploying a model that classifies a comment as spam or not spam.
+Snorkel can be used for this task.
+At a high level, we have a dataset of YouTube comments.
+We add labeling functions, which are Python classes that classify a comment as spam, not spam, or abstained.
+These labeling functions can range from keyword labeling, which labels a comment based on whether it contains a particular word, to third party models such as <a href="https://textblob.readthedocs.io/en/dev/index.html">TextBlob</a>, which identifies sentiment.
+The sentiment can then be used to classify a comment if it is believed that there is a correlation.</p>
+
+<p>Here is an example labeling function that classifies a comment as spam if it contains the word <code class="language-plaintext highlighter-rouge">check</code>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@labeling_function()
+def check(x):
+    return SPAM if "check" in x.text.lower() else ABSTAIN
+</code></pre></div></div>
+
+<p>We then combine these different labeling functions to generate probabilistic labels, where each input has a corresponding vector of size 2 (spam or not spam).
+The first index corresponds to the probability that it is spam and the second contains the probability that it is not spam.
+This combining, which resolves overlaps, can be done using majority voting or Snorkel’s own <a href="https://snorkel.readthedocs.io/en/master/packages/_autosummary/labeling/snorkel.labeling.model.label_model.LabelModel.html#snorkel.labeling.model.label_model.LabelModel">LabelModel</a>.</p>
+
+<p>We then use these probabilistic labels to create labeled data by assigning to each input the class that had the higher probability. 
+This labeled data can then be used to train a discriminative model to make predictions beyond the given dataset.
+For example, we can use Logistic Regression.</p>
+
+<p>The above is a quick summary of Snorkel’s <a href="https://www.snorkel.org/use-cases/01-spam-tutorial#-snorkel-intro-tutorial-data-labeling">post</a>.</p>
+
+<h2 id="interfacing-with-snorkel-using-flask">Interfacing with Snorkel using Flask</h2>
+<p>I wanted the user to be able to perform two actions: getting a prediction for an input comment and adding a new labeling function.
+To do this, I refactored the Snorkel tutorial code into a class <code class="language-plaintext highlighter-rouge">SpamDetection</code> defined in <a href="https://github.com/andrew128/spam-detection-microservice/blob/master/app/snorkel_spam_detection/spamdetection.py"><code class="language-plaintext highlighter-rouge">spamdetection.py</code></a>.</p>
+
+<p>The class automatically loads the training data and trains upon initialization.
+The class also has three member functions, <code class="language-plaintext highlighter-rouge">addLfs()</code> for adding a new labeling function, <code class="language-plaintext highlighter-rouge">train()</code>, and <code class="language-plaintext highlighter-rouge">predict()</code>.
+We define all the initial labeling functions in <code class="language-plaintext highlighter-rouge">labelingfunctions.py</code>.</p>
+
+<p>In the <a href="https://github.com/andrew128/spam-detection-microservice/blob/master/app/controller.py"><code class="language-plaintext highlighter-rouge">controller.py</code></a> file, the routing is defined.
+Upon visiting the page, users are presented with two forms: one for making a prediction and one for adding a new labeling function.
+When the user submits a comment for prediction, the model is run and the prediction is displayed on the same page.
+When a user submits a word into the new labeling function, the model will add that labeling function (which classifies the word as spam), to its own set of labeling functions.</p>
+
+<h2 id="deployment">Deployment</h2>
+<p>There is a Dockerfile and a Docker Compose file to deploy the Flask app.
+We can use Docker’s ecs plugin to deploy to AWS.
+As of writing this post, the plugin is only available in Docker’s <code class="language-plaintext highlighter-rouge">edge</code> channel.
+Using the plugin consists of a few basic docker commands and an AWS account.
+Here is a <a href="https://github.com/docker/ecs-plugin/tree/master/example">link</a> for a complete example and walkthough.</p>
+
+<h2 id="code">Code</h2>
+<p><a href="https://github.com/andrew128/spam-detection-microservice">Here</a> is the full repo.</p>
+
+<p>In the root directory is the <code class="language-plaintext highlighter-rouge">Dockerfile</code> and the <code class="language-plaintext highlighter-rouge">docker-compose.yml</code>, which define the docker service.
+The <code class="language-plaintext highlighter-rouge">app/</code> directory contains the Flask app.
+It uses the MVC design pattern.
+The file <code class="language-plaintext highlighter-rouge">controller.py</code>, which contains the definitions for the Flask routes, uses the Flask Form classes defined in <code class="language-plaintext highlighter-rouge">model.py</code> to display the front page defined in <code class="language-plaintext highlighter-rouge">templates/view.html</code>.
+The directory <code class="language-plaintext highlighter-rouge">snorkel_spam_detection</code> holds the Snorkel model.</p>
+
+<h2 id="resources">Resources</h2>
+<ul>
+  <li><a href="https://www.snorkel.org/use-cases/01-spam-tutorial#task-spam-detection">Snorkel Spam Detection Tutorial</a></li>
+  <li><a href="https://github.com/docker/ecs-plugin/tree/master/example">Deploying a Docker container to AWS</a></li>
+</ul>
+
+  </div>
+
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+
+
+
+<a href="https://github.com/andrew128"><i class="svg-icon github"></i></a>
+
+<a href="https://www.linkedin.com/in/andrew-wei-272027147/"><i class="svg-icon linkedin"></i></a>
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-177211139-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/SpamDetectionMicroservice/',
+		  'title': 'Spam Detection Microservice Using Snorkel'
+		});
+	</script>
+	<!-- End Google Analytics -->
+
+
+  </body>
+</html>

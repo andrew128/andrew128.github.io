@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Defusing CMU's Bomb Lab using GDB (8/28/20) – Andrew Wei – Brown '21 - Computer Science ScB</title>
+    <title>Defusing CMU's Bomb Lab using GDB – Andrew Wei – </title>
 
         <meta charset="utf-8" />
     <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
@@ -17,8 +17,8 @@
     <meta name="author" content="Andrew Wei" />
 
     
-    <meta property="og:title" content="Defusing CMU's Bomb Lab using GDB (8/28/20)" />
-    <meta property="twitter:title" content="Defusing CMU's Bomb Lab using GDB (8/28/20)" />
+    <meta property="og:title" content="Defusing CMU's Bomb Lab using GDB" />
+    <meta property="twitter:title" content="Defusing CMU's Bomb Lab using GDB" />
     
 
     <!--[if lt IE 9]>
@@ -26,7 +26,7 @@
     <![endif]-->
 
     <link rel="stylesheet" type="text/css" href="/style.css" />
-    <link rel="alternate" type="application/rss+xml" title="Andrew Wei - Brown '21 - Computer Science ScB" href="/feed.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Andrew Wei - " href="/feed.xml" />
 
     <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
   </head>
@@ -39,7 +39,7 @@
 
           <div class="site-info">
             <h1 class="site-name"><a href="/">Andrew Wei</a></h1>
-            <p class="site-description">Brown '21 - Computer Science ScB</p>
+            <p class="site-description"></p>
           </div>
 
           <nav>
@@ -51,9 +51,29 @@
     </div>
 
     <div id="main" role="main" class="container">
-      <article class="post">
-  <h1>Defusing CMU's Bomb Lab using GDB (8/28/20)</h1>
+      <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+  tex2jax: {
+  inlineMath: [['$','$'], ['\\(','\\)']],
+  processEscapes: true},
+  jax: ["input/TeX","input/MathML","input/AsciiMath","output/CommonHTML"],
+  extensions: ["tex2jax.js","mml2jax.js","asciimath2jax.js","MathMenu.js","MathZoom.js","AssistiveMML.js", "[Contrib]/a11y/accessibility-menu.js"],
+  TeX: {
+  extensions: ["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js"],
+  equationNumbers: {
+  autoNumber: "AMS"
+  }
+  }
+  });
+  </script>
+<article class="post">
+  <h1>Defusing CMU's Bomb Lab using GDB</h1>
 
+  <div class="date">
+    Written on August 28, 2020
+  </div>
   <div class="entry">
     <p>This post walks through CMU’s ‘bomb’ lab, which involves defusing a ‘bomb’ by finding the correct inputs to successive phases in a binary executable using GDB.</p>
 
@@ -77,8 +97,8 @@ Also note that the binary follow the AT&amp;T standard so instruction operations
 <h4 id="layout-asm">layout asm</h4>
 <p>This command divides the screen into two parts: the command console and a graphical view of the assembly code as you step through it. 
 Control-l can be used to refresh the UI whenever it inevitably becomes distorted.
-While layout asm is helpful, also helpful for full object dump objdump -d path/to/binary
-Can easily search through the entire assembly file!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</p>
+While layout asm is helpful, also helpful to view the complete disassembled binary.
+We can get the full assembly code using an object dump: <code class="language-plaintext highlighter-rouge">objdump -d path/to/binary &gt; temp.txt</code>.</p>
 
 <h4 id="i-r">i r</h4>
 <p>This command lists out all the values that each of the registers hold.</p>
@@ -265,9 +285,6 @@ Entering these numbers allows us to pass <code class="language-plaintext highlig
 
   </div>
 
-  <div class="date">
-    Written on August 28, 2020
-  </div>
 
   
 </article>
@@ -278,7 +295,7 @@ Entering these numbers allows us to pass <code class="language-plaintext highlig
       <div class="container">
         <footer class="footer">
           
-<a href="mailto:andrewwei98@gmail.com"><i class="svg-icon email"></i></a>
+
 
 
 <a href="https://github.com/andrew128"><i class="svg-icon github"></i></a>
@@ -295,6 +312,21 @@ Entering these numbers allows us to pass <code class="language-plaintext highlig
     </div>
 
     
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-177211139-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/CMUBombLab/',
+		  'title': 'Defusing CMU\'s Bomb Lab using GDB'
+		});
+	</script>
+	<!-- End Google Analytics -->
+
 
   </body>
 </html>

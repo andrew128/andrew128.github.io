@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Web App To Download Saved Reddit Posts – Andrew Wei – </title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="tldr visit this link to download your saved reddit posts.
+" />
+    <meta property="og:description" content="tldr visit this link to download your saved reddit posts.
+" />
+    
+    <meta name="author" content="Andrew Wei" />
+
+    
+    <meta property="og:title" content="Web App To Download Saved Reddit Posts" />
+    <meta property="twitter:title" content="Web App To Download Saved Reddit Posts" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Andrew Wei - " href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://avatars0.githubusercontent.com/u/8172167?s=400&u=27034bc93779390bfbaca21727973a54058fc093&v=4" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Andrew Wei</a></h1>
+            <p class="site-description"></p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+  tex2jax: {
+  inlineMath: [['$','$'], ['\\(','\\)']],
+  processEscapes: true},
+  jax: ["input/TeX","input/MathML","input/AsciiMath","output/CommonHTML"],
+  extensions: ["tex2jax.js","mml2jax.js","asciimath2jax.js","MathMenu.js","MathZoom.js","AssistiveMML.js", "[Contrib]/a11y/accessibility-menu.js"],
+  TeX: {
+  extensions: ["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js"],
+  equationNumbers: {
+  autoNumber: "AMS"
+  }
+  }
+  });
+  </script>
+<article class="post">
+  <h1>Web App To Download Saved Reddit Posts</h1>
+
+  <div class="date">
+    Written on February 16, 2023
+  </div>
+  <div class="entry">
+    <p>tldr visit <a href="https://savedredditpostextensionmain.gatsbyjs.io/">this link</a> to download your saved reddit posts.</p>
+
+<h2 id="outline">Outline</h2>
+<ul>
+  <li><a href="#Problem">Problem</a></li>
+  <li><a href="#Solution">Solution</a></li>
+  <li><a href="#milestones">Milestones</a></li>
+  <li><a href="#learnings">Learnings</a></li>
+  <li><a href="#future-work">Future work</a></li>
+</ul>
+
+<h2 id="problem">Problem</h2>
+<p>Reddit only saves up to ~1000 reddit posts before truncating them.</p>
+
+<h2 id="solution">Solution</h2>
+<p>Use the <a href="https://www.reddit.com/dev/api/">Reddit API</a> to download all the saved posts.</p>
+
+<p>The overall design is to have a simple <code class="language-plaintext highlighter-rouge">index.js</code> homepage that displays the authorization link to redirect users to so as to ask for permission to access their saved history.
+There is also a React component implemented as an es6 class that uses Axios to fetch the saved post data using reddit’s listing technique (i.e. paging through data) until there is no more data to be downloaded.
+When the button is clicked, a handler downloads the data as a JSON file.</p>
+
+<h2 id="milestones">Milestones</h2>
+
+<h3 id="1-figure-out-the-stack">1: Figure out the stack</h3>
+<ul>
+  <li>decide what kind of app I want to use (web app, script, etc.)</li>
+  <li>decide deployment strategy (gatsby cloud, github pages, etc.)</li>
+  <li>figure out stack (gatsby, react, axios, etc.)</li>
+</ul>
+
+<h3 id="2-connect-with-reddit-api">2: Connect with Reddit API</h3>
+<ul>
+  <li>Grok the <a href="https://github.com/reddit-archive/reddit/wiki/OAuth2#application-only-oauth">reddit oauth api</a></li>
+  <li>implement authorization code</li>
+</ul>
+
+<h3 id="3-fetch-the-data">3: Fetch the data</h3>
+<ul>
+  <li>Understand the <a href="https://www.reddit.com/dev/api/#GET_user_{username}_saved">reddit api for fetching saved posts</a></li>
+  <li>implement fetch code</li>
+</ul>
+
+<h3 id="4-download-the-data">4: Download the data</h3>
+<ul>
+  <li>implement button to download fetched data</li>
+</ul>
+
+<h2 id="design-decisions-made">Design Decisions Made</h2>
+
+<h3 id="user-flow">User flow</h3>
+<p>I’ve decided the only rendering to be done is through the saved file format taken from the server. I’ve decided against adding rendering of a post directly from reddit (extra work not needed for mvp).</p>
+
+<h3 id="use-of-static-sites">Use of Static Sites</h3>
+<p>Going with a static site generator to generate a static site because the only work needing to be done is querying the data from the reddit api which can be rendered in a template and served back to the user’s browser. The user does not provide much varied input at all (only requesting all the saved posts). Maybe in the future there will be more user options but that is not needed for mvp. Even with metrics those can be precomputed on the server I think. (maybe cached too).</p>
+
+<p>Static pages eliminate the latency that databases introduce when the server has to get all the data from a database, merge with template files and generate html page as a response.</p>
+
+<h3 id="deployment-on-gatsby-cloud">Deployment on Gatsby cloud</h3>
+<p>This is a simple web app and I was already using gatsby.</p>
+
+<h3 id="use-of-gatsby-js">Use of Gatsby JS</h3>
+<p>I was interested in learning how to make a web app and gatsby seemed like an interesting library to learn and play with.</p>
+
+<h2 id="learnings">Learnings</h2>
+<ul>
+  <li>Gatsby development</li>
+  <li>Github pages</li>
+  <li>Deployment in gatsby</li>
+  <li>Static pages</li>
+  <li>react/jsx, React components, lifecycle functions, es6 class</li>
+  <li>Node package installation</li>
+  <li>Authorization and security, client secret (oauth)</li>
+  <li>Cors and http headers</li>
+  <li>Javascript syntax and language (promise chains, async await, arrow functions, etc.)</li>
+</ul>
+
+<h2 id="future-work">Future Work</h2>
+<ul>
+  <li>better UI</li>
+  <li>can sort by subreddit</li>
+  <li>search text of posts</li>
+  <li>add refresh token button</li>
+  <li>display stats on saved posts (e.g. timeline of how many saved posts in what subreddit)</li>
+  <li>display downloaded data, sorted by date</li>
+  <li>use count in reddit parameter for getting saved output listings</li>
+</ul>
+
+  </div>
+
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+
+
+
+<a href="https://github.com/andrew128"><i class="svg-icon github"></i></a>
+
+<a href="https://www.linkedin.com/in/andrew-wei-272027147/"><i class="svg-icon linkedin"></i></a>
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-177211139-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/RedditSaved/',
+		  'title': 'Web App To Download Saved Reddit Posts'
+		});
+	</script>
+	<!-- End Google Analytics -->
+
+
+  </body>
+</html>

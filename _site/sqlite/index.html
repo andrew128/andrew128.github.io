@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>404 - Page not found – Andrew Wei – </title>
+    <title>An Overview of SQLite – Andrew Wei – </title>
 
         <meta charset="utf-8" />
     <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
@@ -9,14 +9,16 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
 
     
-    <meta name="description" content="">
-    <meta property="og:description" content="" />
+    <meta name="description" content="My survey notes on SQLite as I attempt to understand the problems it solves and how it works.
+" />
+    <meta property="og:description" content="My survey notes on SQLite as I attempt to understand the problems it solves and how it works.
+" />
     
     <meta name="author" content="Andrew Wei" />
 
     
-    <meta property="og:title" content="404 - Page not found" />
-    <meta property="twitter:title" content="404 - Page not found" />
+    <meta property="og:title" content="An Overview of SQLite" />
+    <meta property="twitter:title" content="An Overview of SQLite" />
     
 
     <!--[if lt IE 9]>
@@ -49,16 +51,65 @@
     </div>
 
     <div id="main" role="main" class="container">
-      <article class="page">
+      <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+  tex2jax: {
+  inlineMath: [['$','$'], ['\\(','\\)']],
+  processEscapes: true},
+  jax: ["input/TeX","input/MathML","input/AsciiMath","output/CommonHTML"],
+  extensions: ["tex2jax.js","mml2jax.js","asciimath2jax.js","MathMenu.js","MathZoom.js","AssistiveMML.js", "[Contrib]/a11y/accessibility-menu.js"],
+  TeX: {
+  extensions: ["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js"],
+  equationNumbers: {
+  autoNumber: "AMS"
+  }
+  }
+  });
+  </script>
+<article class="post">
+  <h1>An Overview of SQLite</h1>
 
-  <h1>404 - Page not found</h1>
-
+  <div class="date">
+    Written on April 29, 2023
+  </div>
   <div class="entry">
-    <p>Sorry, we can’t find that page that you’re looking for. You can try again by going <a href="/">back to the homepage</a>.</p>
+    <p>My survey notes on SQLite as I attempt to understand the problems it solves and how it works.</p>
 
-<p><a href="/"><img src="/images/404.jpg" alt="Constructocat by https://github.com/jasoncostello" style="width: 400px;" /></a></p>
+<h2 id="post-outline">Post Outline</h2>
+<ul>
+  <li><a href="#perceptron-explanation">Perceptron Explanation</a></li>
+</ul>
+
+<h2 id="what-is-sqlite">What is SQLite</h2>
+<p>A list of notes about SQLite that I found helpful for getting an overall idea of SQLite.</p>
+
+<ul>
+  <li>minimalist</li>
+  <li>faster than the filesystem</li>
+  <li>serverless</li>
+</ul>
+
+<h2 id="general-architecture-description-with-code-example">General Architecture Description With Code Example</h2>
+
+<h2 id="bytecode-engine">Bytecode Engine</h2>
+
+<h2 id="query-planner">Query Planner</h2>
+
+<h2 id="file-format-and-storage">File Format and Storage</h2>
+<h3 id="file-format">File Format</h3>
+
+<h3 id="b-tree">B Tree</h3>
+
+<h3 id="page-cache">Page Cache</h3>
+
+<h2 id="os-interface-and-vfs">OS Interface and VFS</h2>
 
   </div>
+
+
+  
 </article>
 
     </div>
@@ -93,8 +144,8 @@
 
 		ga('create', 'UA-177211139-1', 'auto');
 		ga('send', 'pageview', {
-		  'page': '/404.html',
-		  'title': '404 - Page not found'
+		  'page': '/sqlite/',
+		  'title': 'An Overview of SQLite'
 		});
 	</script>
 	<!-- End Google Analytics -->

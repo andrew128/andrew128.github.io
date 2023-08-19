@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pseudo Random Number Generators and Sampling – Andrew Wei – </title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="An exploration of pseudo random number generators and their applications in sampling.
+" />
+    <meta property="og:description" content="An exploration of pseudo random number generators and their applications in sampling.
+" />
+    
+    <meta name="author" content="Andrew Wei" />
+
+    
+    <meta property="og:title" content="Pseudo Random Number Generators and Sampling" />
+    <meta property="twitter:title" content="Pseudo Random Number Generators and Sampling" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Andrew Wei - " href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://avatars0.githubusercontent.com/u/8172167?s=400&u=27034bc93779390bfbaca21727973a54058fc093&v=4" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Andrew Wei</a></h1>
+            <p class="site-description"></p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+  tex2jax: {
+  inlineMath: [['$','$'], ['\\(','\\)']],
+  processEscapes: true},
+  jax: ["input/TeX","input/MathML","input/AsciiMath","output/CommonHTML"],
+  extensions: ["tex2jax.js","mml2jax.js","asciimath2jax.js","MathMenu.js","MathZoom.js","AssistiveMML.js", "[Contrib]/a11y/accessibility-menu.js"],
+  TeX: {
+  extensions: ["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js"],
+  equationNumbers: {
+  autoNumber: "AMS"
+  }
+  }
+  });
+  </script>
+<article class="post">
+  <h1>Pseudo Random Number Generators and Sampling</h1>
+
+  <div class="date">
+    Written on December 10, 2020
+  </div>
+  <div class="entry">
+    <p>An exploration of pseudo random number generators and their applications in sampling.</p>
+
+<h2 id="post-outline">Post Outline</h2>
+<ul>
+  <li><a href="#what-are-pseudo-random-number-generators">What Are Pseudo Random Number Generators</a></li>
+  <li><a href="#multiplicative-congruential-generators">Multiplicative Congruential Generators</a></li>
+  <li><a href="#how-to-sample">How to Sample</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+</ul>
+
+<h2 id="what-are-pseudo-random-number-generators">What Are Pseudo Random Number Generators</h2>
+
+<p>Often in computing we want to generate random numbers. 
+For example, quick sort is an algorithm that relies on well-randomized subsequences to achieve $O(n \log n)$ expected run time. 
+Another example lies in sampling from distributions, which will be covered in this post.</p>
+
+<p>Pseudo random number generators can be thought of as a machine that, given some inputs, will produce a sequence of numbers that look random but are in fact deterministic, hence “pseudo random”.
+The most important input to any pseudo random number generator is a number called a “seed”.
+Different seeds provide different sequences of numbers.
+The same seed will provide the same sequence of numbers.</p>
+
+<h2 id="multiplicative-congruential-generators">Multiplicative Congruential Generators</h2>
+
+<p>This post will cover a particular pseudo random number generator: Multiplicative Congruential Generators.
+Multiplicative Congurential Generators take as input three numbers: a large prime $m$, a multiplier $a \in 2, 3, …,m-1$, and a seed $R_0 \in 1, 2, …, m-1$.
+Multiplicative Congurential Generators generate the next number in a pseudo random sequence based on the previous value starting with the seed via the following recurrence relation.</p>
+
+\[R_n = (a R_{n-1}) \mod m\]
+
+<p>The sequence $R_0, R_1, …$ is then a sequence of pseudo random numbers with values between $1$ and $m-1$ inclusive.
+MCGs generate every number between $1$ and $m-1$ in the first $m-1$ samples.
+Each following set of $m-1$ cycles start over from $R_0$, which can be proved by Fermat’s Little Theorem (shown below).
+For example, if $m = 4$ and the sequence of samples we generated was $3, 1, 2$, we could continuously get $3, 1, 2, 3, 1, 2, …$ over and over again.
+This makes sense considering that the sequence is deterministic and dependent on the seed value.
+It is important to note that the number of samples requested should never be higher than the input prime.
+If this were the case, we would already know the next value to be predicted starting with the next cycle because we would have already seen every value before.</p>
+
+<h3 id="proof-for-cycle">Proof for Cycle</h3>
+
+<p>Fermat’s Little Theorem states that if a number $p$ is prime and $q \in 1, 2, …, p-1$, then $q^{p-1} \mod p = 1$.
+Applying the above theorem to the recurrence relation for MCGs, we get:</p>
+
+<p>The recurrence relation for $R_m$, the last sample is the following:</p>
+
+\[R_{m-1} = (a^{m-1} R_0) \mod m\]
+
+<p>Using basic mod rules, we can rewrite it like so:</p>
+
+\[R_{m-1} = (a^{m-1}\mod m * R_0 \mod m) \mod m\]
+
+<p>Applying Fermat’s Little Theorem, $a^{m-1}\mod m$ is then 1.
+We end up with $R_0$ being modded by $m$ twice.
+We know that $R_0$ is between $1$ and $m-1$ inclusive as defined by the problem.
+Therefore we know that the $R_0$ modded by $m$ twice is just $R_0$.
+We end up with $R_{m-1} = R_0$.
+$\square$</p>
+
+<h3 id="mcg-implementation">MCG Implementation</h3>
+
+<p>To implement an MCG, we can then specify a function that takes in as inputs a prime, a multiplier, and a seed as mentioned previously.
+We can also let the user specify the number of samples they want.
+Then, we can simply loop for the number of samples and generate a new sample at each iteration by applying the recurrence relation to the previous value, which starts at the seed.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">previous_sample</span> <span class="o">=</span> <span class="n">seed</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_samples</span><span class="p">):</span>
+    <span class="n">next_sample</span> <span class="o">=</span> <span class="p">(</span><span class="n">multiplier</span> <span class="o">*</span> <span class="n">previous_sample</span><span class="p">)</span> <span class="o">%</span> <span class="n">prime</span>
+    <span class="n">previous_sample</span> <span class="o">=</span> <span class="n">next_sample</span>
+</code></pre></div></div>
+
+<h2 id="how-to-sample">How to Sample</h2>
+
+<p>This post will cover how to use the MCG we introduced previously to sample.
+Sampling can be divided into four categories: continuous and discrete samples from uniform and arbitrary distributions.
+Note that sampling from continuous arbitrary distributions will be covered in a later blog post because it is more complex.</p>
+
+<h3 id="uniform-continuous">Uniform continuous</h3>
+
+<p>The MCG outputs pseudo random numbers between $1$ and $m-1$ where $m$ is an input prime.
+To generate uniform continuous samples between $0$ and $1$, we can simply divide each sample by $m$, our input prime.
+To generate continuous samples from any uniform distribution between $a$ and $b$, we can simply multiply each of these samples $\frac{R}{m}$ by $b-a$ and add $a$.
+Given some <code class="language-plaintext highlighter-rouge">samples</code> from an MCG, we can implement the previously described method as follows:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">uniform_samples</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="o">/</span><span class="n">prime</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>Here is a histogram using the above code generating 3000 samples between 0 and 2 using $m=3719$, $a=7$, and $R_0 = 1$.</p>
+
+<p><img src="/images/prngsBlog/Figure2.png" alt="_config.yml" /></p>
+
+<h3 id="uniform-discrete">Uniform discrete</h3>
+
+<p>To get discrete samples from a uniform distribution between $0$ and some positive constant $c$, we can simply mod our samples that we got from the MCG by $c$.
+We can do this because each of our samples are pseudo uniformly distributed between a higher number and modding will retain the pseudo uniformity.
+This can be implemented as follows:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">uniform_samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">%</span><span class="n">c</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>Here is a histogram using the above code generating 3000 samples between 0 and 5 inclusive using $m=3719$, $a=7$, and $R_0 = 1$.</p>
+
+<p><img src="/images/prngsBlog/Figure1.png" alt="_config.yml" /></p>
+
+<h3 id="arbitrary-discrete">Arbitrary discrete</h3>
+
+<p>To generate samples from an arbitrary discrete distribution, we can think of dividing up the interval between 0 and 1 by the probability of each of the x’s in our domain of the probability mass function $p(x)$.
+We can then return as a sample the interval that a uniform sample fell in to.</p>
+
+<p>So for example, if we had a Bernoulli distribution defined by the probability of $x=0$ as $0.4$ and $x=1$ as $0.6$, then we would divide up the unit interval between 0 and 1 with $0$ to $0.4$ and $0.4$ to $1$.
+Then, we get a uniform sample $u$ between $0$ and $1$.
+If $u$ is in between $0$ to $0.4$, we return 0 as the sample.
+If $u$ is in between $0.4$ to $1$, we return 1 as the sample.
+To implement this, we can simply loop through each interval and see if a given sample <code class="language-plaintext highlighter-rouge">curr_sample</code> falls into the interval.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">prev_boundary</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">bucket</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="n">next_boundary</span> <span class="o">=</span> <span class="n">prev_boundary</span> <span class="o">+</span> <span class="n">bucket</span>
+    <span class="k">if</span> <span class="n">curr_sample</span> <span class="o">&gt;=</span> <span class="n">prev_boundary</span> <span class="ow">and</span> <span class="n">curr_sample</span> <span class="o">&lt;=</span> <span class="n">next_boundary</span><span class="p">:</span>
+        <span class="n">bucketed_samples</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+        <span class="k">break</span>
+
+    <span class="n">prev_boundary</span> <span class="o">=</span> <span class="n">next_boundary</span>
+</code></pre></div></div>
+
+<p>Here is a histogram using the above code generating 3000 samples for the pmf with $p(0) = 0.1$, $p(1) = 0.3$, $p(2) = 0.2$, and $p(3) = 0.4$ using $m=3719$, $a=7$, and $R_0 = 1$.</p>
+
+<p><img src="/images/prngsBlog/Figure3.png" alt="_config.yml" /></p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>This post introduced pseudo random number generators with a specific example: Multiplicative Congruential Generators.
+Also presented were methods for sampling from discrete uniform and arbitrary distributions as well as continuous uniform distributions.
+All the code in the post is in this <a href="https://github.com/andrew128/prngs">repository</a>.
+Sampling from arbitrary continuous distributions is more complicated and will be covered in a later blog post.
+It involves methods called inverse cdf and rejection sampling.</p>
+
+  </div>
+
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+
+
+
+<a href="https://github.com/andrew128"><i class="svg-icon github"></i></a>
+
+<a href="https://www.linkedin.com/in/andrew-wei-272027147/"><i class="svg-icon linkedin"></i></a>
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-177211139-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/PRNGs/',
+		  'title': 'Pseudo Random Number Generators and Sampling'
+		});
+	</script>
+	<!-- End Google Analytics -->
+
+
+  </body>
+</html>

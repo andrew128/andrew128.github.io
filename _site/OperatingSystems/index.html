@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Operating Systems in a Nutshell – Andrew Wei – </title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="This blog post introduces Operating Systems and the pieces involved, specifically: processes and threads, drivers, file systems, and virtual memory.
+" />
+    <meta property="og:description" content="This blog post introduces Operating Systems and the pieces involved, specifically: processes and threads, drivers, file systems, and virtual memory.
+" />
+    
+    <meta name="author" content="Andrew Wei" />
+
+    
+    <meta property="og:title" content="Operating Systems in a Nutshell" />
+    <meta property="twitter:title" content="Operating Systems in a Nutshell" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Andrew Wei - " href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="https://avatars0.githubusercontent.com/u/8172167?s=400&u=27034bc93779390bfbaca21727973a54058fc093&v=4" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Andrew Wei</a></h1>
+            <p class="site-description"></p>
+          </div>
+
+          <nav>
+            <a href="/">Blog</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+  tex2jax: {
+  inlineMath: [['$','$'], ['\\(','\\)']],
+  processEscapes: true},
+  jax: ["input/TeX","input/MathML","input/AsciiMath","output/CommonHTML"],
+  extensions: ["tex2jax.js","mml2jax.js","asciimath2jax.js","MathMenu.js","MathZoom.js","AssistiveMML.js", "[Contrib]/a11y/accessibility-menu.js"],
+  TeX: {
+  extensions: ["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js"],
+  equationNumbers: {
+  autoNumber: "AMS"
+  }
+  }
+  });
+  </script>
+<article class="post">
+  <h1>Operating Systems in a Nutshell</h1>
+
+  <div class="date">
+    Written on May  8, 2021
+  </div>
+  <div class="entry">
+    <p>This blog post introduces Operating Systems and the pieces involved, specifically: processes and threads, drivers, file systems, and virtual memory.</p>
+
+<h2 id="post-outline">Post Outline</h2>
+<ul>
+  <li><a href="#intro">Intro</a></li>
+  <li><a href="#processes-and-threads">Processes and Threads</a></li>
+  <li><a href="#drivers">Drivers</a></li>
+  <li><a href="#file-system">File System</a></li>
+  <li><a href="#virtual-memory">Virtual memory</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#sources">Sources</a></li>
+</ul>
+
+<h2 id="intro">Intro</h2>
+<p>In a previous blog post <a href="https://andrew128.github.io/x86-binary/">C Source Code to x86 Binary</a>, we detailed how C source code is compiled into x86 binary. 
+We ended with a brief section that described at a high level how an OS runs the compiled user binary. 
+This blog post aims to go into more detail.</p>
+
+<p>At a high level, what does an OS need?</p>
+
+<h2 id="processes-and-threads">Processes and Threads</h2>
+<p>One obvious answer are processes and threads. 
+Processes represent programs that are being executed. 
+A process can have multiple threads of execution. 
+It’s important to note that in an OS, there are two levels of permissions: kernel mode and user mode.</p>
+
+<p>There are several different ways to have multithreading in an application and they stem from having these two different modes. 
+There are user threads and kernel threads. 
+User threads are added and used by application programmers. 
+Kernel threads are implemented and used by the OS kernel. 
+User threads are mapped to kernel threads in a way that depends on the OS’s implementation. 
+For example, we could have a many to one model in which many user level threads are mapped to a single kernel thread. 
+We could have a one to one model in which each user thread is mapped to its own kernel thread. 
+We could also have a many to many model in which many user threads are multiplexed on many kernel threads.</p>
+
+<p><img src="/images/OS/threads.png" alt="_config.yml" />
+<a href="https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/4_Threads.html#:~:text=The%20many%2Dto%2Dmany%20model,not%20block%20the%20entire%20process.">Source</a></p>
+
+<p>Note that true parallelism can only truly be achieved if the chip of the computer has multiple cores (i.e. multiple CPUs on a single chip). 
+Also note that the POSIX standard defines the specification for pthreads, not the implementation.</p>
+
+<h2 id="drivers">Drivers</h2>
+<p>An OS will need a way to interact with hardware, such as keyboards, mice, and disks. 
+The software that handles these interactions are called drivers.
+For example, in order for a user to interact with a terminal via a keyboard, an OS might have a buffer that reads in what users type.
+When an enter (i.e. new line character is pressed), the OS would read in what is in the buffer up until the new line and attempt to interpret it as a command.</p>
+
+<h2 id="file-system">File System</h2>
+<p>An operating system will also typically have a file system. 
+A file system’s purpose is to provide permanent storage to the OS. 
+An OS’s file system differs from database systems in that data systems are built to handle large amounts of data. 
+An OS’s file system, on the other hand, is used to hold programs, source code, and local directories and files. 
+OS’s will usually have a virtual file system, which can be thought of as an interface that actual file system’s must implement. 
+For example, a virtual file system will define signatures of functions such as open, close, read, and write. 
+An actual file system will provide the implementation details for those functions.</p>
+
+<p>The actual file system will typically be on disk, meaning that data can be stored in non volatile memory that will still exist after the OS turns off or crashes. 
+The disk representation of a file system is important in the performance of file systems. 
+In S5FS, a very early Unix file system, there are four key components:</p>
+
+<ul>
+  <li>the boot block</li>
+  <li>the super block</li>
+  <li>the inode list</li>
+  <li>the data region</li>
+</ul>
+
+<p><img src="/images/OS/disk.png" alt="_config.yml" />
+<a href="#https://www.amazon.com/Operating-Systems-Depth-Design-Programming/dp/0471687235">Source</a></p>
+
+<p>Together, these components form the file format on disk of the file system. 
+The boot block connects the operating system and the file system; it contains the initial program stored on the disk that begins the loading of the operating system. 
+The super block describes the layout of the rest of the disk. 
+It contains metadata such as the start of the free list. 
+The inode list contains an array of nodes that can be used to represent a file. 
+The data region contains the data corresponding to the files included in the inode list.</p>
+
+<p>One interesting part of the design of the data region in S5fs in the concept of direct and indirect blocks. 
+There are a certain number of direct blocks that directly contain a file’s contents. 
+Then there are some indirect blocks which are pointers to blocks that point to blocks. 
+There can be multiple levels of indirection with an indirect block pointing to another indirect block that points to actual file blocks. 
+With this design, sequentially accessing a file is efficient. 
+In addition, representing sparse files where huge chunks of the file are empty is very efficient. 
+This is because we can have indirect blocks point to nothing, indicating no data is stored there. 
+A downside is that accessing actual data in the indirect blocks is slower as multiple layers of indirect blocks have to be traversed.</p>
+
+<p><img src="/images/OS/indirectblocks.png" alt="_config.yml" />
+<a href="#https://www.amazon.com/Operating-Systems-Depth-Design-Programming/dp/0471687235">Source</a></p>
+
+<h2 id="virtual-memory">Virtual Memory</h2>
+
+<p>One of the key components of an operating system is virtual memory. 
+Virtual memory is a technique in representing memory in an idealized perspective separate from what actual physical memory may be structured. 
+In the idealized perspective, each process has its own virtual view of memory that is isolated from the virtual memory of other processes.</p>
+
+<p>Because the memory is virtual, the memory of all the processes don’t have to actually be in main memory all the time. 
+They can be mapped in from disk as needed, which is significantly cheaper.</p>
+
+<p><img src="/images/OS/pagetable.png" alt="_config.yml" />
+<a href="https://en.wikipedia.org/wiki/Page_table">Source</a></p>
+
+<p>The pages that are being mapped to and from disk and memory correspond to the different parts of a process’s virtual address space such as the text (containing the source code), the data, the stack (stores local variables/function calls), the heap (dynamic memory allocation), and more.</p>
+
+<p>The sections are also covered in <a href="https://andrew128.github.io/x86-binary/#executable-format">this blog post</a>.</p>
+
+<p>These different areas can be stored as a linked list where each allocated piece of memory represents a part of the process’s virtual address space. 
+This is typically called a virtual memory map.</p>
+
+<p>Note that not all of these different parts need to be backed to disk. 
+For example, the stack and the heap are only relevant to the process when it’s running.</p>
+
+<p>In an OS, there is a system process called fork which creates an exact copy of the parent process called the child process. 
+This can be very slow if we were to actually copy over each page. 
+Instead, we can lazily copy over areas and only create a new modification if a process actually modifies the area (performing a write). 
+We can use shadow objects, which can be thought of as a tree representation where the root is the original object. 
+Everytime a modification is made by a forked process, a new child shadow object is spawned that holds the modifications from the parent shadow object above it. 
+This technique of only creating a new object upon modification is called copy on write.</p>
+
+<p>So we now know what we’re mapping, but how does the actual mapping work? 
+Whenever we encounter a page fault in user space, we use a page fault handler which is a function that takes in a virtual user address that isn’t mapped into memory yet, finds the page on disk containing the user address and maps it in. 
+The main part of this mapping process uses a cache called a Translation Lookaside buffer (TLB). 
+The TLB cache holds physical addresses that were previously read in and stored. 
+If the corresponding physical address is not found, then we have to go back to disk to find the physical address.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>In this blog post, we covered the core parts that make up an OS, from the processes and threads that run programs to the drivers that allow users to interact with the computer physically to disks that allow data to be stored, to virtual memory which allows for an efficient and effective method of mapping between data on disk and memory processes.</p>
+
+<h2 id="sources">Sources</h2>
+<ul>
+  <li><a href="https://github.com/brown-cs1690/handout/wiki/Virtual-Memory">Weenix website</a></li>
+  <li><a href="https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/4_Threads.html#:~:text=The%20many%2Dto%2Dmany%20model,not%20block%20the%20entire%20process.">UIC OS Notes</a></li>
+  <li><a href="https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/what-is-a-driver-">Microsoft Drivers Docs</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/File_system">File System</a></li>
+</ul>
+
+  </div>
+
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+
+
+
+<a href="https://github.com/andrew128"><i class="svg-icon github"></i></a>
+
+<a href="https://www.linkedin.com/in/andrew-wei-272027147/"><i class="svg-icon linkedin"></i></a>
+
+
+
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+	<!-- Google Analytics -->
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-177211139-1', 'auto');
+		ga('send', 'pageview', {
+		  'page': '/OperatingSystems/',
+		  'title': 'Operating Systems in a Nutshell'
+		});
+	</script>
+	<!-- End Google Analytics -->
+
+
+  </body>
+</html>
