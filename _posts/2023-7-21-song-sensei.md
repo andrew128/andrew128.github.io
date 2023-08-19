@@ -31,6 +31,8 @@ This app consists of two pages.
 
 - song-sensei/pages/chat/index.js: chat components that contains logic to automatically find and add search results to a new playlist in the user's logged in Spotify
 
+See [repo](https://github.com/andrew128/song-sensei) for code. 
+
 ## Key design decisions
 - Making a website (as opposed to a script): more user friendly, accessible anywhere
 - Model choice: Chat gpt 3.5 turbo because its the most complex version available publicly
