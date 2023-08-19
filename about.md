@@ -4,27 +4,12 @@ title: About
 permalink: /about/
 ---
 
-Welcome to my blog documenting my technical explorations. 
-Contact me at  `andrewwei98 [at] gmail [dot] com`.
+Software Engineer at Facebook.
+Graduated from Brown University in 2021 with a Bachelors of Science in Computer Science.
+In my free time I enjoy finding new music and playing squash.
 
-# Categories
-Roughly based off of https://teachyourselfcs.com/ categories. 
-Some posts could probably fit in multiple categories.
+[Here](http://www.sudocat.blogspot.com/) is the link to my old blog site.
 
-## Web
+### Contact me
 
-## Machine Learning
-
-## Interesting Algorithms
-
-## Computer Architecture
-
-## Operating Systems
-
-## Computer Networking
-
-## Databases
-
-## Languages and Compilers
-
-## Distributed Systems
+- andrewwei98 [at] gmail [dot] com
