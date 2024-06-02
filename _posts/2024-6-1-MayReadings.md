@@ -7,8 +7,8 @@ Summary of resources I read/watched in May.
 The focus of this month was to get familiar with terms and concepts underlying Generative AI. 
 
 # 3Blue1Brown Videos
-- [Attention in transformers, visually explained | Chapter 6, Deep Learning](https://www.youtube.com/watch?v=eMlx5fFNoYc)
-- [But what is a GPT? Visual intro to transformers | Chapter 5, Deep Learning](https://www.youtube.com/watch?v=wjZofJX0v4M)
+- [Attention in transformers, visually explained, Chapter 6, Deep Learning](https://www.youtube.com/watch?v=eMlx5fFNoYc)
+- [But what is a GPT? Visual intro to transformers, Chapter 5, Deep Learning](https://www.youtube.com/watch?v=wjZofJX0v4M)
 
 These two videos were helpful to gain an intuitive sense of how llms work. 
 Lots of matrix multiplication though.
