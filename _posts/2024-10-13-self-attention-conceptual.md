@@ -32,7 +32,7 @@ This is because in a given input sequence, we can generate context size number o
 If the dot product is large, the two vectors are similar and the embedding referred to by the query vector is highly relevant to the embedding referred to by the key vector.
 The key token attends to the query token. 
 
-![_config.yml]({{ site.baseurl }}/images/transformers/attention_pattern)
+![_config.yml]({{ site.baseurl }}/images/transformers/attention_pattern.png)
 
 The dot product values in each row are then passed through a softmax function to have each column's values sum to one.
 Note that since we only care about previous tokens affecting the current token, we zero out the values in the attention pattern that correspond to future tokens by setting those values to negative infinity and letting the softmax function push all those values to zero.
@@ -41,7 +41,7 @@ Now we multiply the value matrix by each of the previous token's embeddings in t
 The value vectors are "weighted" by the dot product values in the attention pattern.
 Then they are summed up to produce a single output vector that can be thought of as the embedding change to be added to the query embedding to refine the query embedding to match the context more.
 
-![_config.yml]({{ site.baseurl }}/images/transformers/updating_value_vector)
+![_config.yml]({{ site.baseurl }}/images/transformers/updating_value_vector.png)
 
 This is how the attention block produces a set of output changes that refine the input embeddings to match the context more.
 
