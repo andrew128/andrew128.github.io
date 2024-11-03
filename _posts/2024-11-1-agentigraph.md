@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AGENTiGraph: An Interactive Knowledge Graph Platform for LLM-based Chatbots utilizing Private Data
+title: AGENTiGraph An Interactive Knowledge Graph Platform for LLM-based Chatbots utilizing Private Data
 ---
 
 A summary of the paper (link in resources section).
