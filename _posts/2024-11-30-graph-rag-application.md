@@ -78,3 +78,4 @@ There are several gaps that would have to be covered before productionizing:
 
 ## Resources
 - Graph RAG survey paper: https://arxiv.org/abs/2408.08921 
+- See https://github.com/andrew128/simple-graph-rag-app for the code repo
