@@ -5,16 +5,14 @@ title: Simple Graph Rag Application
 A description of a simple graph rag application. 
 
 ## Problem
-The way I think is in terms of connections and graphs. Its probably how other people think too. I think it works especially well for me. I always have lots of ideas of things that I want to work on but I throw it in different notes in the notes app and dont have a good way of exploring or surfacing my ideas. 
+The way I think is in terms of connections and entities which seem to be a natural thought pattern in humans. 
+The use case I want to solve for is having lots of ideas and throwing them in a list structure but not having a good way of exploring, surfacing, or drawing connections between my ideas.
 
 ## Solution
-App that stores a knowledge graph of your thoughts and notes with a natural language interface using LLMs. this is a graph rag application if we’re going buzzwordy. The idea is to be able to “upload” ideas and thoughts in the form of unstructured text through a natural language interface. This is one user action. 
-
-There will be some parsing and chunking done here. That will then store the unstructured text in the KG. 
-
-The other user action is being able to ask questions and query information about the built up knowledge graph. This will require embedding the user question and doing a vector search on the unstructured text nodes in the KG.
-
-Similarly I want to be able to view the knowledge graph and interact with it in a UI. This should come for free with the inherent graph structure though (although obviously the UI needs to be built).  
+The basic solution I have in mind is a graph rag application.
+The idea is to be able to “upload” ideas and thoughts in the form of unstructured text through a natural language interface.
+The other user action is being able to ask questions and query information about the built up knowledge graph. 
+This will require embedding the user question and doing a vector search on the unstructured text nodes in the KG.
 
 ## MVP Design
 This architecture is the the simplest possible graph rag design that is designed well to scale and handle new graph rag architectures. I’m going to start off with a simple lexical unstructured graph structure. 
