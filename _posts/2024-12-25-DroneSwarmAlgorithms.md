@@ -102,6 +102,20 @@ class LineFormation(DroneAlgorithm):
         return "Line Formation"
 ```
 
+Here is a slightly more interesting algorithm that causes the drones to move up and down according to an oscillating sine wave:
+```
+class WaveMotion(DroneAlgorithm):
+    def update(self, drones, dt, time):
+        import math
+        for i, drone in enumerate(drones):
+            pos = drone.getPos()
+            offset = math.sin(time * 2.0 + i * 0.5) * 0.5
+            drone.setPos(pos.x, pos.y, 2 + offset)
+    
+    def get_name(self):
+        return "Wave Motion"
+```
+
 ## Using the Algorithms in the Simulation
 To use this algorithm in the `DroneSimulation` class, we update the `init` method to set up the algorithms and bind keys to each algorithm so that the drones' positions can be updated in real time.
 
